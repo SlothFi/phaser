@@ -1,29 +1,30 @@
-'use strict';
+"use strict";
 
-const webpack = require('webpack');
-const exec = require('child_process').exec;
+const webpack = require("webpack");
+const exec = require("child_process").exec;
 
 module.exports = {
-    mode: 'development',
+    mode: "development",
 
     context: `${__dirname}/../src/`,
 
     entry: {
-        phaser: './phaser.js'
+        phaser: "./phaser.js",
     },
 
-    devtool: 'source-map',
+    devtool: "source-map",
 
     output: {
-        path: `${__dirname}/../build/`,
-        filename: '[name].js',
-        library: 'Phaser',
-        libraryTarget: 'umd',
-        sourceMapFilename: '[file].map',
-        devtoolModuleFilenameTemplate: 'webpack:///[resource-path]', // string
-        devtoolFallbackModuleFilenameTemplate: 'webpack:///[resource-path]?[hash]', // string
+        path: `${__dirname}/../dist/`,
+        filename: "[name].js",
+        library: "Phaser",
+        libraryTarget: "umd",
+        sourceMapFilename: "[file].map",
+        devtoolModuleFilenameTemplate: "webpack:///[resource-path]", // string
+        devtoolFallbackModuleFilenameTemplate:
+            "webpack:///[resource-path]?[hash]", // string
         umdNamedDefine: true,
-        globalObject: 'this'
+        globalObject: "this",
     },
 
     performance: { hints: false },
@@ -36,19 +37,25 @@ module.exports = {
             "typeof PLUGIN_3D": JSON.stringify(false),
             "typeof PLUGIN_CAMERA3D": JSON.stringify(false),
             "typeof PLUGIN_FBINSTANT": JSON.stringify(false),
-            "typeof FEATURE_SOUND": JSON.stringify(true)
+            "typeof FEATURE_SOUND": JSON.stringify(true),
         }),
         {
             apply: (compiler) => {
-                compiler.hooks.afterEmit.tap('AfterEmitPlugin', (compilation) => {
-                    exec('node scripts/copy-to-examples-watch.js', (err, stdout, stderr) => {
-                        if (stdout) process.stdout.write(stdout);
-                        if (stderr) process.stderr.write(stderr);
-                    });
-                });
-            }
-        }
+                compiler.hooks.afterEmit.tap(
+                    "AfterEmitPlugin",
+                    (compilation) => {
+                        exec(
+                            "node scripts/copy-to-examples-watch.js",
+                            (err, stdout, stderr) => {
+                                if (stdout) process.stdout.write(stdout);
+                                if (stderr) process.stderr.write(stderr);
+                            }
+                        );
+                    }
+                );
+            },
+        },
     ],
 
-    devtool: 'source-map'
+    devtool: "source-map",
 };

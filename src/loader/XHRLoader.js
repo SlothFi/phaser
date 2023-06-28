@@ -4,7 +4,7 @@
  * @license      {@link https://opensource.org/licenses/MIT|MIT License}
  */
 
-var MergeXHRSettings = require('./MergeXHRSettings');
+var MergeXHRSettings = require("./MergeXHRSettings");
 
 /**
  * Creates a new XMLHttpRequest (xhr) object based on the given File and XHRSettings
@@ -19,42 +19,34 @@ var MergeXHRSettings = require('./MergeXHRSettings');
  *
  * @return {XMLHttpRequest} The XHR object.
  */
-var XHRLoader = function (file, globalXHRSettings)
-{
+var XHRLoader = function (file, globalXHRSettings) {
     var config = MergeXHRSettings(globalXHRSettings, file.xhrSettings);
-
     var xhr = new XMLHttpRequest();
 
-    xhr.open('GET', file.src, config.async, config.user, config.password);
+    xhr.open("GET", file.src, config.async, config.user, config.password);
 
     xhr.responseType = file.xhrSettings.responseType;
     xhr.timeout = config.timeout;
 
-    if (config.headers)
-    {
-        for (var key in config.headers)
-        {
+    if (config.headers) {
+        for (var key in config.headers) {
             xhr.setRequestHeader(key, config.headers[key]);
         }
     }
 
-    if (config.header && config.headerValue)
-    {
+    if (config.header && config.headerValue) {
         xhr.setRequestHeader(config.header, config.headerValue);
     }
 
-    if (config.requestedWith)
-    {
-        xhr.setRequestHeader('X-Requested-With', config.requestedWith);
+    if (config.requestedWith) {
+        xhr.setRequestHeader("X-Requested-With", config.requestedWith);
     }
 
-    if (config.overrideMimeType)
-    {
+    if (config.overrideMimeType) {
         xhr.overrideMimeType(config.overrideMimeType);
     }
 
-    if (config.withCredentials)
-    {
+    if (config.withCredentials) {
         xhr.withCredentials = true;
     }
 
