@@ -1,7 +1,7 @@
-'use strict';
+"use strict";
 
-const webpack = require('webpack');
-const exec = require('child_process').exec;
+const webpack = require("webpack");
+const exec = require("child_process").exec;
 
 module.exports = [
 
