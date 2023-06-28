@@ -4,17 +4,17 @@
  * @license      {@link https://opensource.org/licenses/MIT|MIT License}
  */
 
-var Class = require('../utils/Class');
-var CONST = require('./const');
-var CustomSet = require('../structs/Set');
-var EventEmitter = require('eventemitter3');
-var Events = require('./events');
-var FileTypesManager = require('./FileTypesManager');
-var GetFastValue = require('../utils/object/GetFastValue');
-var GetValue = require('../utils/object/GetValue');
-var PluginCache = require('../plugins/PluginCache');
-var SceneEvents = require('../scene/events');
-var XHRSettings = require('./XHRSettings');
+var Class = require("../utils/Class");
+var CONST = require("./const");
+var CustomSet = require("../structs/Set");
+var EventEmitter = require("eventemitter3");
+var Events = require("./events");
+var FileTypesManager = require("./FileTypesManager");
+var GetFastValue = require("../utils/object/GetFastValue");
+var GetValue = require("../utils/object/GetValue");
+var PluginCache = require("../plugins/PluginCache");
+var SceneEvents = require("../scene/events");
+var XHRSettings = require("./XHRSettings");
 
 /**
  * @classdesc
@@ -51,13 +51,9 @@ var XHRSettings = require('./XHRSettings');
  * @param {Phaser.Scene} scene - The Scene which owns this Loader instance.
  */
 var LoaderPlugin = new Class({
-
     Extends: EventEmitter,
 
-    initialize:
-
-    function LoaderPlugin (scene)
-    {
+    initialize: function LoaderPlugin(scene) {
         EventEmitter.call(this);
 
         var gameConfig = scene.sys.game.config;
@@ -123,7 +119,7 @@ var LoaderPlugin = new Class({
          * @default ''
          * @since 3.7.0
          */
-        this.prefix = '';
+        this.prefix = "";
 
         /**
          * The value of `path`, if set, is placed before any _relative_ file path given. For example:
@@ -148,7 +144,7 @@ var LoaderPlugin = new Class({
          * @default ''
          * @since 3.0.0
          */
-        this.path = '';
+        this.path = "";
 
         /**
          * If you want to append a URL before the path of any asset you can set this here.
@@ -162,13 +158,17 @@ var LoaderPlugin = new Class({
          * @default ''
          * @since 3.0.0
          */
-        this.baseURL = '';
+        this.baseURL = "";
 
-        this.setBaseURL(GetFastValue(sceneConfig, 'baseURL', gameConfig.loaderBaseURL));
+        this.setBaseURL(
+            GetFastValue(sceneConfig, "baseURL", gameConfig.loaderBaseURL)
+        );
 
-        this.setPath(GetFastValue(sceneConfig, 'path', gameConfig.loaderPath));
+        this.setPath(GetFastValue(sceneConfig, "path", gameConfig.loaderPath));
 
-        this.setPrefix(GetFastValue(sceneConfig, 'prefix', gameConfig.loaderPrefix));
+        this.setPrefix(
+            GetFastValue(sceneConfig, "prefix", gameConfig.loaderPrefix)
+        );
 
         /**
          * The number of concurrent / parallel resources to try and fetch at once.
@@ -181,7 +181,11 @@ var LoaderPlugin = new Class({
          * @type {number}
          * @since 3.0.0
          */
-        this.maxParallelDownloads = GetFastValue(sceneConfig, 'maxParallelDownloads', gameConfig.loaderMaxParallelDownloads);
+        this.maxParallelDownloads = GetFastValue(
+            sceneConfig,
+            "maxParallelDownloads",
+            gameConfig.loaderMaxParallelDownloads
+        );
 
         /**
          * xhr specific global settings (can be overridden on a per-file basis)
@@ -191,12 +195,27 @@ var LoaderPlugin = new Class({
          * @since 3.0.0
          */
         this.xhr = XHRSettings(
-            GetFastValue(sceneConfig, 'responseType', gameConfig.loaderResponseType),
-            GetFastValue(sceneConfig, 'async', gameConfig.loaderAsync),
-            GetFastValue(sceneConfig, 'user', gameConfig.loaderUser),
-            GetFastValue(sceneConfig, 'password', gameConfig.loaderPassword),
-            GetFastValue(sceneConfig, 'timeout', gameConfig.loaderTimeout),
-            GetFastValue(sceneConfig, 'withCredentials', gameConfig.loaderWithCredentials)
+            GetFastValue(
+                sceneConfig,
+                "responseType",
+                gameConfig.loaderResponseType,
+                ""
+            ),
+            GetFastValue(sceneConfig, "async", gameConfig.loaderAsync, true),
+            GetFastValue(sceneConfig, "user", gameConfig.loaderUser, ""),
+            GetFastValue(
+                sceneConfig,
+                "password",
+                gameConfig.loaderPassword,
+                ""
+            ),
+            GetFastValue(sceneConfig, "timeout", gameConfig.loaderTimeout, 0),
+            GetFastValue(
+                sceneConfig,
+                "withCredentials",
+                gameConfig.loaderWithCredentials,
+                false
+            )
         );
 
         /**
@@ -206,7 +225,11 @@ var LoaderPlugin = new Class({
          * @type {string}
          * @since 3.0.0
          */
-        this.crossOrigin = GetFastValue(sceneConfig, 'crossOrigin', gameConfig.loaderCrossOrigin);
+        this.crossOrigin = GetFastValue(
+            sceneConfig,
+            "crossOrigin",
+            gameConfig.loaderCrossOrigin
+        );
 
         /**
          * Optional load type for image files. `XHR` is the default. Set to `HTMLImageElement` to load images using the Image tag instead.
@@ -215,7 +238,11 @@ var LoaderPlugin = new Class({
          * @type {string}
          * @since 3.60.0
          */
-        this.imageLoadType = GetFastValue(sceneConfig, 'imageLoadType', gameConfig.loaderImageLoadType);
+        this.imageLoadType = GetFastValue(
+            sceneConfig,
+            "imageLoadType",
+            gameConfig.loaderImageLoadType
+        );
 
         /**
          * An array of all schemes that the Loader considers as being 'local'.
@@ -227,7 +254,11 @@ var LoaderPlugin = new Class({
          * @type {string[]}
          * @since 3.60.0
          */
-        this.localSchemes = GetFastValue(sceneConfig, 'localScheme', gameConfig.loaderLocalScheme);
+        this.localSchemes = GetFastValue(
+            sceneConfig,
+            "localScheme",
+            gameConfig.loaderLocalScheme
+        );
 
         /**
          * The total number of files to load. It may not always be accurate because you may add to the Loader during the process
@@ -358,8 +389,7 @@ var LoaderPlugin = new Class({
      * @private
      * @since 3.5.1
      */
-    boot: function ()
-    {
+    boot: function () {
         this.systems.events.once(SceneEvents.DESTROY, this.destroy, this);
     },
 
@@ -372,8 +402,7 @@ var LoaderPlugin = new Class({
      * @private
      * @since 3.5.1
      */
-    pluginStart: function ()
-    {
+    pluginStart: function () {
         this.systems.events.once(SceneEvents.SHUTDOWN, this.shutdown, this);
     },
 
@@ -392,13 +421,13 @@ var LoaderPlugin = new Class({
      *
      * @return {this} This Loader object.
      */
-    setBaseURL: function (url)
-    {
-        if (url === undefined) { url = ''; }
+    setBaseURL: function (url) {
+        if (url === undefined) {
+            url = "";
+        }
 
-        if (url !== '' && url.substr(-1) !== '/')
-        {
-            url = url.concat('/');
+        if (url !== "" && url.substr(-1) !== "/") {
+            url = url.concat("/");
         }
 
         this.baseURL = url;
@@ -432,13 +461,13 @@ var LoaderPlugin = new Class({
      *
      * @return {this} This Loader object.
      */
-    setPath: function (path)
-    {
-        if (path === undefined) { path = ''; }
+    setPath: function (path) {
+        if (path === undefined) {
+            path = "";
+        }
 
-        if (path !== '' && path.substr(-1) !== '/')
-        {
-            path = path.concat('/');
+        if (path !== "" && path.substr(-1) !== "/") {
+            path = path.concat("/");
         }
 
         this.path = path;
@@ -461,9 +490,10 @@ var LoaderPlugin = new Class({
      *
      * @return {this} This Loader object.
      */
-    setPrefix: function (prefix)
-    {
-        if (prefix === undefined) { prefix = ''; }
+    setPrefix: function (prefix) {
+        if (prefix === undefined) {
+            prefix = "";
+        }
 
         this.prefix = prefix;
 
@@ -487,8 +517,7 @@ var LoaderPlugin = new Class({
      *
      * @return {this} This Loader object.
      */
-    setCORS: function (crossOrigin)
-    {
+    setCORS: function (crossOrigin) {
         this.crossOrigin = crossOrigin;
 
         return this;
@@ -511,27 +540,22 @@ var LoaderPlugin = new Class({
      *
      * @param {(Phaser.Loader.File|Phaser.Loader.File[])} file - The file, or array of files, to be added to the load queue.
      */
-    addFile: function (file)
-    {
-        if (!Array.isArray(file))
-        {
-            file = [ file ];
+    addFile: function (file) {
+        if (!Array.isArray(file)) {
+            file = [file];
         }
 
-        for (var i = 0; i < file.length; i++)
-        {
+        for (var i = 0; i < file.length; i++) {
             var item = file[i];
 
             //  Does the file already exist in the cache or texture manager?
             //  Or will it conflict with a file already in the queue or inflight?
-            if (!this.keyExists(item))
-            {
+            if (!this.keyExists(item)) {
                 this.list.set(item);
 
                 this.emit(Events.ADD, item.key, item.type, this, item);
 
-                if (this.isLoading())
-                {
+                if (this.isLoading()) {
                     this.totalToLoad++;
                     this.updateProgress();
                 }
@@ -550,46 +574,34 @@ var LoaderPlugin = new Class({
      *
      * @return {boolean} `true` if adding this file will cause a cache or queue conflict, otherwise `false`.
      */
-    keyExists: function (file)
-    {
+    keyExists: function (file) {
         var keyConflict = file.hasCacheConflict();
 
-        if (!keyConflict)
-        {
-            this.list.iterate(function (item)
-            {
-                if (item.type === file.type && item.key === file.key)
-                {
+        if (!keyConflict) {
+            this.list.iterate(function (item) {
+                if (item.type === file.type && item.key === file.key) {
                     keyConflict = true;
 
                     return false;
                 }
-
             });
         }
 
-        if (!keyConflict && this.isLoading())
-        {
-            this.inflight.iterate(function (item)
-            {
-                if (item.type === file.type && item.key === file.key)
-                {
+        if (!keyConflict && this.isLoading()) {
+            this.inflight.iterate(function (item) {
+                if (item.type === file.type && item.key === file.key) {
                     keyConflict = true;
 
                     return false;
                 }
-
             });
 
-            this.queue.iterate(function (item)
-            {
-                if (item.type === file.type && item.key === file.key)
-                {
+            this.queue.iterate(function (item) {
+                if (item.type === file.type && item.key === file.key) {
                     keyConflict = true;
 
                     return false;
                 }
-
             });
         }
 
@@ -613,15 +625,11 @@ var LoaderPlugin = new Class({
      *
      * @return {boolean} `true` if any files were added to the queue, otherwise `false`.
      */
-    addPack: function (pack, packKey)
-    {
+    addPack: function (pack, packKey) {
         //  if no packKey provided we'll add everything to the queue
-        if (typeof(packKey) === 'string')
-        {
+        if (typeof packKey === "string") {
             var subPack = GetValue(pack, packKey);
-
-            if (subPack)
-            {
+            if (subPack) {
                 pack = { packKey: subPack };
             }
         }
@@ -634,35 +642,32 @@ var LoaderPlugin = new Class({
         var currentPrefix = this.prefix;
 
         //  Here we go ...
-        for (var key in pack)
-        {
-            if (!Object.prototype.hasOwnProperty.call(pack, key))
-            {
+        for (var key in pack) {
+            if (!Object.prototype.hasOwnProperty.call(pack, key)) {
                 continue;
             }
 
             var config = pack[key];
 
             //  Any meta data to process?
-            var baseURL = GetFastValue(config, 'baseURL', currentBaseURL);
-            var path = GetFastValue(config, 'path', currentPath);
-            var prefix = GetFastValue(config, 'prefix', currentPrefix);
-            var files = GetFastValue(config, 'files', null);
-            var defaultType = GetFastValue(config, 'defaultType', 'void');
+            var baseURL = GetFastValue(config, "baseURL", currentBaseURL);
+            var path = GetFastValue(config, "path", currentPath);
+            var prefix = GetFastValue(config, "prefix", currentPrefix);
+            var files = GetFastValue(config, "files", null);
+            var defaultType = GetFastValue(config, "defaultType", "void");
 
-            if (Array.isArray(files))
-            {
+            if (Array.isArray(files)) {
                 this.setBaseURL(baseURL);
                 this.setPath(path);
                 this.setPrefix(prefix);
 
-                for (var i = 0; i < files.length; i++)
-                {
+                for (var i = 0; i < files.length; i++) {
                     var file = files[i];
-                    var type = (file.hasOwnProperty('type')) ? file.type : defaultType;
+                    var type = file.hasOwnProperty("type")
+                        ? file.type
+                        : defaultType;
 
-                    if (this[type])
-                    {
+                    if (this[type]) {
                         this[type](file);
                         total++;
                     }
@@ -675,7 +680,7 @@ var LoaderPlugin = new Class({
         this.setPath(currentPath);
         this.setPrefix(currentPrefix);
 
-        return (total > 0);
+        return total > 0;
     },
 
     /**
@@ -686,9 +691,11 @@ var LoaderPlugin = new Class({
      *
      * @return {boolean} `true` if the Loader is busy loading or processing, otherwise `false`.
      */
-    isLoading: function ()
-    {
-        return (this.state === CONST.LOADER_LOADING || this.state === CONST.LOADER_PROCESSING);
+    isLoading: function () {
+        return (
+            this.state === CONST.LOADER_LOADING ||
+            this.state === CONST.LOADER_PROCESSING
+        );
     },
 
     /**
@@ -699,9 +706,11 @@ var LoaderPlugin = new Class({
      *
      * @return {boolean} `true` if the Loader is ready to start a new load, otherwise `false`.
      */
-    isReady: function ()
-    {
-        return (this.state === CONST.LOADER_IDLE || this.state === CONST.LOADER_COMPLETE);
+    isReady: function () {
+        return (
+            this.state === CONST.LOADER_IDLE ||
+            this.state === CONST.LOADER_COMPLETE
+        );
     },
 
     /**
@@ -719,10 +728,8 @@ var LoaderPlugin = new Class({
      * @fires Phaser.Loader.Events#START
      * @since 3.0.0
      */
-    start: function ()
-    {
-        if (!this.isReady())
-        {
+    start: function () {
+        if (!this.isReady()) {
             return;
         }
 
@@ -734,12 +741,9 @@ var LoaderPlugin = new Class({
 
         this.emit(Events.START, this);
 
-        if (this.list.size === 0)
-        {
+        if (this.list.size === 0) {
             this.loadComplete();
-        }
-        else
-        {
+        } else {
             this.state = CONST.LOADER_LOADING;
 
             this.inflight.clear();
@@ -762,9 +766,9 @@ var LoaderPlugin = new Class({
      * @fires Phaser.Loader.Events#PROGRESS
      * @since 3.0.0
      */
-    updateProgress: function ()
-    {
-        this.progress = 1 - ((this.list.size + this.inflight.size) / this.totalToLoad);
+    updateProgress: function () {
+        this.progress =
+            1 - (this.list.size + this.inflight.size) / this.totalToLoad;
 
         this.emit(Events.PROGRESS, this.progress);
     },
@@ -775,10 +779,12 @@ var LoaderPlugin = new Class({
      * @method Phaser.Loader.LoaderPlugin#update
      * @since 3.10.0
      */
-    update: function ()
-    {
-        if (this.state === CONST.LOADER_LOADING && this.list.size > 0 && this.inflight.size < this.maxParallelDownloads)
-        {
+    update: function () {
+        if (
+            this.state === CONST.LOADER_LOADING &&
+            this.list.size > 0 &&
+            this.inflight.size < this.maxParallelDownloads
+        ) {
             this.checkLoadQueue();
         }
     },
@@ -795,31 +801,29 @@ var LoaderPlugin = new Class({
      * @private
      * @since 3.7.0
      */
-    checkLoadQueue: function ()
-    {
-        this.list.each(function (file)
-        {
-            if (file.state === CONST.FILE_POPULATED || (file.state === CONST.FILE_PENDING && this.inflight.size < this.maxParallelDownloads))
-            {
+    checkLoadQueue: function () {
+        this.list.each(function (file) {
+            if (
+                file.state === CONST.FILE_POPULATED ||
+                (file.state === CONST.FILE_PENDING &&
+                    this.inflight.size < this.maxParallelDownloads)
+            ) {
                 this.inflight.set(file);
 
                 this.list.delete(file);
 
                 //  If the file doesn't have its own crossOrigin set, we'll use the Loaders (which is undefined by default)
-                if (!file.crossOrigin)
-                {
+                if (!file.crossOrigin) {
                     file.crossOrigin = this.crossOrigin;
                 }
 
                 file.load();
             }
 
-            if (this.inflight.size === this.maxParallelDownloads)
-            {
+            if (this.inflight.size === this.maxParallelDownloads) {
                 //  Tells the Set iterator to abort
                 return false;
             }
-
         }, this);
     },
 
@@ -837,11 +841,9 @@ var LoaderPlugin = new Class({
      * @param {Phaser.Loader.File} file - The File that just finished loading, or errored during load.
      * @param {boolean} success - `true` if the file loaded successfully, otherwise `false`.
      */
-    nextFile: function (file, success)
-    {
+    nextFile: function (file, success) {
         //  Has the game been destroyed during load? If so, bail out now.
-        if (!this.inflight)
-        {
+        if (!this.inflight) {
             return;
         }
 
@@ -849,8 +851,7 @@ var LoaderPlugin = new Class({
 
         this.updateProgress();
 
-        if (success)
-        {
+        if (success) {
             this.totalComplete++;
 
             this.queue.set(file);
@@ -858,9 +859,7 @@ var LoaderPlugin = new Class({
             this.emit(Events.FILE_LOAD, file);
 
             file.onProcess();
-        }
-        else
-        {
+        } else {
             this.totalFailed++;
 
             this._deleteQueue.set(file);
@@ -883,35 +882,30 @@ var LoaderPlugin = new Class({
      *
      * @param {Phaser.Loader.File} file - The file that has finished processing.
      */
-    fileProcessComplete: function (file)
-    {
+    fileProcessComplete: function (file) {
         //  Has the game been destroyed during load? If so, bail out now.
-        if (!this.scene || !this.systems || !this.systems.game || this.systems.game.pendingDestroy)
-        {
+        if (
+            !this.scene ||
+            !this.systems ||
+            !this.systems.game ||
+            this.systems.game.pendingDestroy
+        ) {
             return;
         }
 
         //  This file has failed, so move it to the failed Set
-        if (file.state === CONST.FILE_ERRORED)
-        {
-            if (file.multiFile)
-            {
+        if (file.state === CONST.FILE_ERRORED) {
+            if (file.multiFile) {
                 file.multiFile.onFileFailed(file);
             }
-        }
-        else if (file.state === CONST.FILE_COMPLETE)
-        {
-            if (file.multiFile)
-            {
-                if (file.multiFile.isReadyToProcess())
-                {
+        } else if (file.state === CONST.FILE_COMPLETE) {
+            if (file.multiFile) {
+                if (file.multiFile.isReadyToProcess()) {
                     //  If we got here then all files the link file needs are ready to add to the cache
                     file.multiFile.addToCache();
                     file.multiFile.pendingDestroy();
                 }
-            }
-            else
-            {
+            } else {
                 //  If we got here, then the file processed, so let it add itself to its cache
                 file.addToCache();
                 file.pendingDestroy();
@@ -923,8 +917,11 @@ var LoaderPlugin = new Class({
 
         //  Nothing left to do?
 
-        if (this.list.size === 0 && this.inflight.size === 0 && this.queue.size === 0)
-        {
+        if (
+            this.list.size === 0 &&
+            this.inflight.size === 0 &&
+            this.queue.size === 0
+        ) {
             this.loadComplete();
         }
     },
@@ -940,8 +937,7 @@ var LoaderPlugin = new Class({
      * @fires Phaser.Loader.Events#POST_PROCESS
      * @since 3.7.0
      */
-    loadComplete: function ()
-    {
+    loadComplete: function () {
         this.emit(Events.POST_PROCESS, this);
 
         this.list.clear();
@@ -955,7 +951,7 @@ var LoaderPlugin = new Class({
         this.systems.events.off(SceneEvents.UPDATE, this.update, this);
 
         //  Call 'destroy' on each file ready for deletion
-        this._deleteQueue.iterateLocal('destroy');
+        this._deleteQueue.iterateLocal("destroy");
 
         this._deleteQueue.clear();
 
@@ -970,8 +966,7 @@ var LoaderPlugin = new Class({
      *
      * @param {Phaser.Loader.File} file - The File to be queued for deletion when the Loader completes.
      */
-    flagForRemoval: function (file)
-    {
+    flagForRemoval: function (file) {
         this._deleteQueue.set(file);
     },
 
@@ -988,8 +983,7 @@ var LoaderPlugin = new Class({
      *
      * @return {this} This Loader plugin.
      */
-    saveJSON: function (data, filename)
-    {
+    saveJSON: function (data, filename) {
         return this.save(JSON.stringify(data), filename);
     },
 
@@ -1008,19 +1002,22 @@ var LoaderPlugin = new Class({
      *
      * @return {this} This Loader plugin.
      */
-    save: function (data, filename, filetype)
-    {
-        if (filename === undefined) { filename = 'file.json'; }
-        if (filetype === undefined) { filetype = 'application/json'; }
+    save: function (data, filename, filetype) {
+        if (filename === undefined) {
+            filename = "file.json";
+        }
+        if (filetype === undefined) {
+            filetype = "application/json";
+        }
 
-        var blob = new Blob([ data ], { type: filetype });
+        var blob = new Blob([data], { type: filetype });
 
         var url = URL.createObjectURL(blob);
 
-        var a = document.createElement('a');
+        var a = document.createElement("a");
 
         a.download = filename;
-        a.textContent = 'Download ' + filename;
+        a.textContent = "Download " + filename;
         a.href = url;
         a.click();
 
@@ -1037,8 +1034,7 @@ var LoaderPlugin = new Class({
      * @method Phaser.Loader.LoaderPlugin#reset
      * @since 3.0.0
      */
-    reset: function ()
-    {
+    reset: function () {
         this.list.clear();
         this.inflight.clear();
         this.queue.clear();
@@ -1046,9 +1042,13 @@ var LoaderPlugin = new Class({
         var gameConfig = this.systems.game.config;
         var sceneConfig = this.systems.settings.loader;
 
-        this.setBaseURL(GetFastValue(sceneConfig, 'baseURL', gameConfig.loaderBaseURL));
-        this.setPath(GetFastValue(sceneConfig, 'path', gameConfig.loaderPath));
-        this.setPrefix(GetFastValue(sceneConfig, 'prefix', gameConfig.loaderPrefix));
+        this.setBaseURL(
+            GetFastValue(sceneConfig, "baseURL", gameConfig.loaderBaseURL)
+        );
+        this.setPath(GetFastValue(sceneConfig, "path", gameConfig.loaderPath));
+        this.setPrefix(
+            GetFastValue(sceneConfig, "prefix", gameConfig.loaderPrefix)
+        );
 
         this.state = CONST.LOADER_IDLE;
     },
@@ -1061,8 +1061,7 @@ var LoaderPlugin = new Class({
      * @private
      * @since 3.0.0
      */
-    shutdown: function ()
-    {
+    shutdown: function () {
         this.reset();
 
         this.state = CONST.LOADER_SHUTDOWN;
@@ -1081,8 +1080,7 @@ var LoaderPlugin = new Class({
      * @private
      * @since 3.0.0
      */
-    destroy: function ()
-    {
+    destroy: function () {
         this.shutdown();
 
         this.state = CONST.LOADER_DESTROYED;
@@ -1099,10 +1097,9 @@ var LoaderPlugin = new Class({
         this.textureManager = null;
         this.cacheManager = null;
         this.sceneManager = null;
-    }
-
+    },
 });
 
-PluginCache.register('Loader', LoaderPlugin, 'load');
+PluginCache.register("Loader", LoaderPlugin, "load");
 
 module.exports = LoaderPlugin;
