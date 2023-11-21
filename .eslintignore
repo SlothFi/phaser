@@ -1,3 +1,4 @@
+src/phaser-esm.js
 src/phaser-arcade-physics.js
 src/animations/config.json
 src/physics/matter-js/lib/
@@ -14,6 +15,7 @@ plugins/spine/src/runtimes/
 scripts/
 webpack.*
 webpack.config.js
+webpack-nospector.config.js
 webpack.dist.config.js
 webpack.fb.config.js
 webpack.fb.dist.config.js

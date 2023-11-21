@@ -1,14 +1,15 @@
 /**
  * @author       Richard Davey <rich@photonstorm.com>
- * @copyright    2022 Photon Storm Ltd.
+ * @copyright    2013-2023 Photon Storm Ltd.
  * @license      {@link https://opensource.org/licenses/MIT|MIT License}
  */
 
+var Animation = require('./Animation');
+var Between = require('../math/Between');
 var Class = require('../utils/Class');
 var CustomMap = require('../structs/Map');
-var GetFastValue = require('../utils/object/GetFastValue');
 var Events = require('./events');
-var Animation = require('./Animation');
+var GetFastValue = require('../utils/object/GetFastValue');
 
 /**
  * @classdesc
@@ -228,6 +229,16 @@ var AnimationState = new Class({
         this.skipMissedFrames = true;
 
         /**
+         * Start playback of this animation from a random frame?
+         *
+         * @name Phaser.Animations.AnimationState#randomFrame
+         * @type {boolean}
+         * @default false
+         * @since 3.60.0
+         */
+        this.randomFrame = false;
+
+        /**
          * The delay before starting playback of the current animation, in milliseconds.
          *
          * This value is set when a new animation is loaded into this component and should
@@ -296,6 +307,21 @@ var AnimationState = new Class({
          * @since 3.50.0
          */
         this.yoyo = false;
+
+        /**
+         * If the animation has a delay set, before playback will begin, this
+         * controls when the first frame is set on the Sprite. If this property
+         * is 'false' then the frame is set only after the delay has expired.
+         * This is the default behavior.
+         *
+         * If this property is 'true' then the first frame of this animation
+         * is set immediately, and then when the delay expires, playback starts.
+         *
+         * @name Phaser.Animations.AnimationState#showBeforeDelay
+         * @type {boolean}
+         * @since 3.60.0
+         */
+        this.showBeforeDelay = false;
 
         /**
          * Should the GameObject's `visible` property be set to `true` when the animation starts to play?
@@ -497,7 +523,7 @@ var AnimationState = new Class({
         {
             var anim = key[i];
 
-            if (this.nextAnim === null)
+            if (!this.nextAnim)
             {
                 this.nextAnim = anim;
             }
@@ -582,17 +608,24 @@ var AnimationState = new Class({
             this.repeat = GetFastValue(key, 'repeat', anim.repeat);
             this.repeatDelay = GetFastValue(key, 'repeatDelay', anim.repeatDelay);
             this.yoyo = GetFastValue(key, 'yoyo', anim.yoyo);
+            this.showBeforeDelay = GetFastValue(key, 'showBeforeDelay', anim.showBeforeDelay);
             this.showOnStart = GetFastValue(key, 'showOnStart', anim.showOnStart);
             this.hideOnComplete = GetFastValue(key, 'hideOnComplete', anim.hideOnComplete);
             this.skipMissedFrames = GetFastValue(key, 'skipMissedFrames', anim.skipMissedFrames);
+            this.randomFrame = GetFastValue(key, 'randomFrame', anim.randomFrame);
 
             this.timeScale = GetFastValue(key, 'timeScale', this.timeScale);
 
             var startFrame = GetFastValue(key, 'startFrame', 0);
 
-            if (startFrame > anim.getTotalFrames())
+            if (startFrame > totalFrames)
             {
                 startFrame = 0;
+            }
+
+            if (this.randomFrame)
+            {
+                startFrame = Between(0, totalFrames - 1);
             }
 
             var frame = anim.frames[startFrame];
@@ -983,6 +1016,11 @@ var AnimationState = new Class({
         {
             this.handleStart();
         }
+        else if (this.showBeforeDelay)
+        {
+            //  We have a delay, but still need to set the frame
+            this.setCurrentFrame(this.currentFrame);
+        }
 
         return gameObject;
     },
@@ -1071,16 +1109,21 @@ var AnimationState = new Class({
     emitEvents: function (event, keyEvent)
     {
         var anim = this.currentAnim;
-        var frame = this.currentFrame;
-        var gameObject = this.parent;
 
-        var frameKey = frame.textureFrame;
-
-        gameObject.emit(event, anim, frame, gameObject, frameKey);
-
-        if (keyEvent)
+        if (anim)
         {
-            gameObject.emit(keyEvent + anim.key, anim, frame, gameObject, frameKey);
+            var frame = this.currentFrame;
+
+            var gameObject = this.parent;
+
+            var frameKey = frame.textureFrame;
+
+            gameObject.emit(event, anim, frame, gameObject, frameKey);
+
+            if (keyEvent)
+            {
+                gameObject.emit(keyEvent + anim.key, anim, frame, gameObject, frameKey);
+            }
         }
     },
 
@@ -1320,6 +1363,8 @@ var AnimationState = new Class({
 
         this.isPlaying = false;
 
+        this.delayCounter = 0;
+
         if (this.currentAnim)
         {
             this.handleStop();
@@ -1459,7 +1504,7 @@ var AnimationState = new Class({
             return;
         }
 
-        this.accumulator += delta * this.timeScale;
+        this.accumulator += delta * this.timeScale * this.animationManager.globalTimeScale;
 
         if (this._pendingStop === 1)
         {
@@ -1696,6 +1741,10 @@ var AnimationState = new Class({
 
                 this.anims.set(key, anim);
             }
+            else
+            {
+                console.warn('Animation key already exists: ' + key);
+            }
         }
 
         return anim;
@@ -1844,16 +1893,16 @@ var AnimationState = new Class({
      * Example:
      *
      * If you have a sprite sheet loaded called `explosion` and it contains 12 frames, then you can call this method using:
-     * `this.anims.generateFrameNumbers('explosion', { start: 0, end: 12 })`.
+     * `this.anims.generateFrameNumbers('explosion', { start: 0, end: 11 })`.
      *
      * The `end` value tells it to stop after 12 frames. To create an animation using this method, you can do:
      *
      * ```javascript
      * this.anims.create({
      *   key: 'boom',
-     *   frames: this.anims.generateFrameNames('explosion', {
+     *   frames: this.anims.generateFrameNumbers('explosion', {
      *     start: 0,
-     *     end: 12
+     *     end: 11
      *   })
      * });
      * ```
@@ -1872,7 +1921,7 @@ var AnimationState = new Class({
      * @since 3.50.0
      *
      * @param {string} key - The key for the texture containing the animation frames.
-     * @param {Phaser.Types.Animations.GenerateFrameNumbers} config - The configuration object for the animation frames.
+     * @param {Phaser.Types.Animations.GenerateFrameNumbers} [config] - The configuration object for the animation frames.
      *
      * @return {Phaser.Types.Animations.AnimationFrame[]} The array of {@link Phaser.Types.Animations.AnimationFrame} objects.
      */

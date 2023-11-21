@@ -1,6 +1,6 @@
 /**
  * @author       Richard Davey <rich@photonstorm.com>
- * @copyright    2022 Photon Storm Ltd.
+ * @copyright    2013-2023 Photon Storm Ltd.
  * @license      {@link https://opensource.org/licenses/MIT|MIT License}
  */
 
@@ -201,20 +201,33 @@ var ImageFile = new Class({
      */
     addToCache: function ()
     {
+        //  Check if we have a linked normal map
         var linkFile = this.linkFile;
 
-        if (linkFile && linkFile.state >= CONST.FILE_COMPLETE)
+        if (linkFile)
         {
-            if (this.type === 'image')
+            //  We do, but has it loaded?
+            if (linkFile.state >= CONST.FILE_COMPLETE)
             {
-                this.cache.addImage(this.key, this.data, linkFile.data);
+                //  Both files have loaded
+                if (this.type === 'normalMap')
+                {
+                    //  linkFile.data = Image
+                    //  this.data = Normal Map
+                    this.cache.addImage(this.key, linkFile.data, this.data);
+                }
+                else
+                {
+                    //  linkFile.data = Normal Map
+                    //  this.data = Image
+                    this.cache.addImage(this.key, this.data, linkFile.data);
+                }
             }
-            else
-            {
-                this.cache.addImage(linkFile.key, linkFile.data, this.data);
-            }
+
+            //  Nothing to do here, we'll use the linkFile `addToCache` call
+            //  to process this pair
         }
-        else if (!linkFile)
+        else
         {
             this.cache.addImage(this.key, this.data);
         }
@@ -308,7 +321,7 @@ var ImageFile = new Class({
  * It is available in the default build but can be excluded from custom builds.
  *
  * @method Phaser.Loader.LoaderPlugin#image
- * @fires Phaser.Loader.LoaderPlugin#ADD
+ * @fires Phaser.Loader.Events#ADD
  * @since 3.0.0
  *
  * @param {(string|Phaser.Types.Loader.FileTypes.ImageFileConfig|Phaser.Types.Loader.FileTypes.ImageFileConfig[])} key - The key to use for this file, or a file configuration object, or array of them.

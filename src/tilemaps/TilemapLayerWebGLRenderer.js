@@ -1,6 +1,6 @@
 /**
  * @author       Richard Davey <rich@photonstorm.com>
- * @copyright    2022 Photon Storm Ltd.
+ * @copyright    2013-2023 Photon Storm Ltd.
  * @license      {@link https://opensource.org/licenses/MIT|MIT License}
  */
 
@@ -95,7 +95,7 @@ var TilemapLayerWebGLRenderer = function (renderer, src, camera)
             scrollFactorX, scrollFactorY,
             tw, th,
             frameX, frameY, frameWidth, frameHeight,
-            tint, tint, tint, tint, false,
+            tint, tint, tint, tint, tile.tintFill,
             0, 0,
             camera,
             null,

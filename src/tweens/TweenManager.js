@@ -1,6 +1,6 @@
 /**
  * @author       Richard Davey <rich@photonstorm.com>
- * @copyright    2022 Photon Storm Ltd.
+ * @copyright    2013-2023 Photon Storm Ltd.
  * @license      {@link https://opensource.org/licenses/MIT|MIT License}
  */
 
@@ -11,11 +11,43 @@ var NumberTweenBuilder = require('./builders/NumberTweenBuilder');
 var PluginCache = require('../plugins/PluginCache');
 var SceneEvents = require('../scene/events');
 var StaggerBuilder = require('./builders/StaggerBuilder');
+var Tween = require('./tween/Tween');
 var TweenBuilder = require('./builders/TweenBuilder');
+var TweenChain = require('./tween/TweenChain');
+var TweenChainBuilder = require('./builders/TweenChainBuilder');
 
 /**
  * @classdesc
  * The Tween Manager is a default Scene Plugin which controls and updates Tweens.
+ *
+ * A tween is a way to alter one or more properties of a target object over a defined period of time.
+ *
+ * Tweens are created by calling the `add` method and passing in the configuration object.
+ *
+ * ```js
+ * const logo = this.add.image(100, 100, 'logo');
+ *
+ * this.tweens.add({
+ *   targets: logo,
+ *   x: 600,
+ *   ease: 'Power1',
+ *   duration: 2000
+ * });
+ * ```
+ *
+ * See the `TweenBuilderConfig` for all of the options you have available.
+ *
+ * Playback will start immediately unless the tween has been configured to be paused.
+ *
+ * Please note that a Tween will not manipulate any target property that begins with an underscore.
+ *
+ * Tweens are designed to be 'fire-and-forget'. They automatically destroy themselves once playback
+ * is complete, to free-up memory and resources. If you wish to keep a tween after playback, i.e. to
+ * play it again at a later time, then you should set the `persist` property to `true` in the config.
+ * However, doing so means it's entirely up to _you_ to destroy the tween when you're finished with it,
+ * otherwise it will linger in memory forever.
+ *
+ * If you wish to chain Tweens together for sequential playback, see the `TweenManager.chain` method.
  *
  * @class TweenManager
  * @memberof Phaser.Tweens
@@ -40,13 +72,13 @@ var TweenManager = new Class({
         this.scene = scene;
 
         /**
-         * The Systems object of the Scene which owns this Tween Manager.
+         * The Scene Systems Event Emitter.
          *
-         * @name Phaser.Tweens.TweenManager#systems
-         * @type {Phaser.Scenes.Systems}
-         * @since 3.0.0
+         * @name Phaser.Tweens.TweenManager#events
+         * @type {Phaser.Events.EventEmitter}
+         * @since 3.60.0
          */
-        this.systems = scene.sys;
+        this.events = scene.sys.events;
 
         /**
          * The time scale of the Tween Manager.
@@ -167,8 +199,8 @@ var TweenManager = new Class({
          */
         this.gap = 1000 / 240;
 
-        scene.sys.events.once(SceneEvents.BOOT, this.boot, this);
-        scene.sys.events.on(SceneEvents.START, this.start, this);
+        this.events.once(SceneEvents.BOOT, this.boot, this);
+        this.events.on(SceneEvents.START, this.start, this);
     },
 
     /**
@@ -181,7 +213,7 @@ var TweenManager = new Class({
      */
     boot: function ()
     {
-        this.systems.events.once(SceneEvents.DESTROY, this.destroy, this);
+        this.events.once(SceneEvents.DESTROY, this.destroy, this);
     },
 
     /**
@@ -195,17 +227,15 @@ var TweenManager = new Class({
      */
     start: function ()
     {
-        var eventEmitter = this.systems.events;
-
-        eventEmitter.on(SceneEvents.UPDATE, this.update, this);
-        eventEmitter.once(SceneEvents.SHUTDOWN, this.shutdown, this);
-
         this.timeScale = 1;
         this.paused = false;
 
         this.startTime = Date.now();
         this.prevTime = this.startTime;
         this.nextTime = this.gap;
+
+        this.events.on(SceneEvents.UPDATE, this.update, this);
+        this.events.once(SceneEvents.SHUTDOWN, this.shutdown, this);
     },
 
     /**
@@ -228,21 +258,33 @@ var TweenManager = new Class({
      */
     create: function (config)
     {
-        if (Array.isArray(config))
+        if (!Array.isArray(config))
         {
-            var result = [];
+            config = [ config ];
+        }
 
-            for (var i = 0; i < config.length; i++)
+        var result = [];
+
+        for (var i = 0; i < config.length; i++)
+        {
+            var tween = config[i];
+
+            if (tween instanceof Tween || tween instanceof TweenChain)
             {
-                result.push(TweenBuilder(this, config[i]));
+                //  Allow them to send an array of mixed instances and configs
+                result.push(tween);
             }
+            else if (Array.isArray(tween.tweens))
+            {
+                result.push(TweenChainBuilder(this, tween));
+            }
+            else
+            {
+                result.push(TweenBuilder(this, tween));
+            }
+        }
 
-            return result;
-        }
-        else
-        {
-            return TweenBuilder(this, config);
-        }
+        return (result.length === 1) ? result[0] : result;
     },
 
     /**
@@ -273,45 +315,97 @@ var TweenManager = new Class({
      * However, doing so means it's entirely up to _you_ to destroy the tween when you're finished with it,
      * otherwise it will linger in memory forever.
      *
-     * You can optionally pass an **array** of Tween Configuration objects to this method and it will create
-     * one Tween per entry in the array. If an array is given, an array of tweens is returned.
-     *
      * If you wish to chain Tweens together for sequential playback, see the `TweenManager.chain` method.
      *
      * @method Phaser.Tweens.TweenManager#add
      * @since 3.0.0
      *
-     * @param {Phaser.Types.Tweens.TweenBuilderConfig|Phaser.Types.Tweens.TweenBuilderConfig[]|object|object[]} config - A Tween Configuration object. Or an array of Tween Configuration objects.
+     * @param {Phaser.Types.Tweens.TweenBuilderConfig|Phaser.Types.Tweens.TweenChainBuilderConfig|Phaser.Tweens.Tween|Phaser.Tweens.TweenChain} config - A Tween Configuration object, or a Tween or TweenChain instance.
      *
-     * @return {Phaser.Tweens.Tween|Phaser.Tweens.Tween[]} The created Tween, or an array of Tweens if an array of tween configs was provided.
+     * @return {Phaser.Tweens.Tween} The created Tween.
      */
     add: function (config)
     {
-        var tween;
+        var tween = config;
+        var tweens = this.tweens;
 
-        if (Array.isArray(config))
+        if (tween instanceof Tween || tween instanceof TweenChain)
         {
-            var result = [];
-
-            for (var i = 0; i < config.length; i++)
-            {
-                tween = TweenBuilder(this, config[i]);
-
-                this.tweens.push(tween.init());
-
-                result.push(tween);
-            }
-
-            return result;
+            tweens.push(tween.reset());
         }
         else
         {
-            tween = TweenBuilder(this, config);
+            if (Array.isArray(tween.tweens))
+            {
+                tween = TweenChainBuilder(this, tween);
+            }
+            else
+            {
+                tween = TweenBuilder(this, tween);
+            }
 
-            this.tweens.push(tween.init());
-
-            return tween;
+            tweens.push(tween.reset());
         }
+
+        return tween;
+    },
+
+    /**
+     * Create multiple Tweens and add them all to this Tween Manager, by passing an array of Tween Configuration objects.
+     *
+     * See the `TweenBuilderConfig` for all of the options you have available.
+     *
+     * Playback will start immediately unless the tweens have been configured to be paused.
+     *
+     * Please note that a Tween will not manipulate any target property that begins with an underscore.
+     *
+     * Tweens are designed to be 'fire-and-forget'. They automatically destroy themselves once playback
+     * is complete, to free-up memory and resources. If you wish to keep a tween after playback, i.e. to
+     * play it again at a later time, then you should set the `persist` property to `true` in the config.
+     * However, doing so means it's entirely up to _you_ to destroy the tween when you're finished with it,
+     * otherwise it will linger in memory forever.
+     *
+     * If you wish to chain Tweens together for sequential playback, see the `TweenManager.chain` method.
+     *
+     * @method Phaser.Tweens.TweenManager#addMultiple
+     * @since 3.60.0
+     *
+     * @param {Phaser.Types.Tweens.TweenBuilderConfig[]|object[]} configs - An array of Tween Configuration objects.
+     *
+     * @return {Phaser.Tweens.Tween[]} An array of created Tweens.
+     */
+    addMultiple: function (configs)
+    {
+        var tween;
+        var result = [];
+        var tweens = this.tweens;
+
+        for (var i = 0; i < configs.length; i++)
+        {
+            tween = configs[i];
+
+            if (tween instanceof Tween || tween instanceof TweenChain)
+            {
+                tweens.push(tween.reset());
+            }
+            else
+            {
+                if (Array.isArray(tween.tweens))
+                {
+                    tween = TweenChainBuilder(this, tween);
+                }
+                else
+                {
+                    tween = TweenBuilder(this, tween);
+                }
+
+                tweens.push(tween.reset());
+            }
+
+            result.push(tween);
+        }
+
+        return result;
     },
 
     /**
@@ -319,7 +413,7 @@ var TweenManager = new Class({
      *
      * The tweens are played in order, from start to finish. You can optionally set the chain
      * to repeat as many times as you like. Once the chain has finished playing, or repeating if set,
-     * all tweens in the chain will be destroyed automatically. To override this, set the 'persists'
+     * all tweens in the chain will be destroyed automatically. To override this, set the `persist`
      * argument to 'true'.
      *
      * Playback will start immediately unless the _first_ Tween has been configured to be paused.
@@ -329,47 +423,17 @@ var TweenManager = new Class({
      * @method Phaser.Tweens.TweenManager#chain
      * @since 3.60.0
      *
-     * @param {Phaser.Types.Tweens.TweenBuilderConfig[]|object[]} tweens - An array of Tween configuration objects for the Tweens in this chain.
+     * @param {Phaser.Types.Tweens.TweenChainBuilderConfig|object} tweens - A Tween Chain configuration object.
      *
-     * @return {Phaser.Tweens.Tween} The first Tween in the chain.
+     * @return {Phaser.Tweens.TweenChain} The Tween Chain instance.
      */
-    chain: function (tweens, repeat, repeatDelay)
+    chain: function (config)
     {
-        if (repeat === undefined) { repeat = false; }
-        if (repeatDelay === undefined) { repeatDelay = 0; }
+        var chain = TweenChainBuilder(this, config);
 
-        if (!Array.isArray(tweens))
-        {
-            tweens = [ tweens ];
-        }
+        this.tweens.push(chain.init());
 
-        var tween;
-
-        var result = [];
-        var prevTween = null;
-
-        for (var i = 0; i < tweens.length; i++)
-        {
-            tween = TweenBuilder(this, tweens[i]);
-
-            this.tweens.push(tween.init(i > 0));
-
-            if (i > 0)
-            {
-                prevTween.chain(tween);
-            }
-
-            prevTween = tween;
-
-            result.push(tween);
-
-            if (repeat > 0)
-            {
-                tween.persist = true;
-            }
-        }
-
-        return result[0];
+        return chain;
     },
 
     /**
@@ -425,7 +489,7 @@ var TweenManager = new Class({
     {
         if (!this.has(tween))
         {
-            this.tweens.push(tween.init());
+            this.tweens.push(tween.reset());
         }
 
         return this;
@@ -433,6 +497,12 @@ var TweenManager = new Class({
 
     /**
      * Create a Number Tween and add it to the active Tween list.
+     *
+     * A Number Tween is a special kind of tween that doesn't have a target. Instead,
+     * it allows you to tween between 2 numeric values. The default values are
+     * `0` and `1`, but you can change them via the `from` and `to` properties.
+     *
+     * You can get the current tweened value via the `Tween.getValue()` method.
      *
      * Playback will start immediately unless the tween has been configured to be paused.
      *
@@ -449,7 +519,7 @@ var TweenManager = new Class({
     {
         var tween = NumberTweenBuilder(this, config);
 
-        this.tweens.push(tween.init());
+        this.tweens.push(tween.reset());
 
         return tween;
     },
@@ -650,8 +720,9 @@ var TweenManager = new Class({
 
         var delta = this.getDelta(tick);
 
-        if (delta === 0)
+        if (delta <= 0)
         {
+            //  If we've got a negative delta, skip this step
             return;
         }
 
@@ -822,8 +893,6 @@ var TweenManager = new Class({
      * @method Phaser.Tweens.TweenManager#getTweens
      * @since 3.0.0
      *
-     * @param {}
-     *
      * @return {Phaser.Tweens.Tween[]} A new array containing references to all Tweens.
      */
     getTweens: function ()
@@ -841,7 +910,7 @@ var TweenManager = new Class({
      * @method Phaser.Tweens.TweenManager#getTweensOf
      * @since 3.0.0
      *
-     * @param {object|array} target - The target to look for. Provide an array to look for multiple targets.
+     * @param {(object|object[])} target - The target to look for. Provide an array to look for multiple targets.
      *
      * @return {Phaser.Tweens.Tween[]} A new array containing all Tweens which affect the given target(s).
      */
@@ -850,7 +919,14 @@ var TweenManager = new Class({
         var output = [];
         var list = this.tweens;
 
-        target = Flatten(target);
+        if (!Array.isArray(target))
+        {
+            target = [ target ];
+        }
+        else
+        {
+            target = Flatten(target);
+        }
 
         var targetLen = target.length;
 
@@ -860,7 +936,7 @@ var TweenManager = new Class({
 
             for (var t = 0; t < targetLen; t++)
             {
-                if (tween.hasTarget(target[t]))
+                if (!tween.isDestroyed() && tween.hasTarget(target[t]))
                 {
                     output.push(tween);
                 }
@@ -949,7 +1025,7 @@ var TweenManager = new Class({
      */
     killAll: function ()
     {
-        var tweens = (this.processing) ? this.getAllTweens() : this.tweens;
+        var tweens = (this.processing) ? this.getTweens() : this.tweens;
 
         for (var i = 0; i < tweens.length; i++)
         {
@@ -1051,10 +1127,8 @@ var TweenManager = new Class({
 
         this.tweens = [];
 
-        var eventEmitter = this.systems.events;
-
-        eventEmitter.off(SceneEvents.UPDATE, this.update, this);
-        eventEmitter.off(SceneEvents.SHUTDOWN, this.shutdown, this);
+        this.events.off(SceneEvents.UPDATE, this.update, this);
+        this.events.off(SceneEvents.SHUTDOWN, this.shutdown, this);
     },
 
     /**
@@ -1068,10 +1142,10 @@ var TweenManager = new Class({
     {
         this.shutdown();
 
-        this.scene.sys.events.off(SceneEvents.START, this.start, this);
+        this.events.off(SceneEvents.START, this.start, this);
 
         this.scene = null;
-        this.systems = null;
+        this.events = null;
     }
 
 });

@@ -1,6 +1,6 @@
 /**
  * @author       Richard Davey <rich@photonstorm.com>
- * @copyright    2022 Photon Storm Ltd.
+ * @copyright    2013-2023 Photon Storm Ltd.
  * @license      {@link https://opensource.org/licenses/MIT|MIT License}
  */
 
@@ -85,7 +85,7 @@ var TextStyle = new Class({
          * The font size.
          *
          * @name Phaser.GameObjects.TextStyle#fontSize
-         * @type {string}
+         * @type {(string|number)}
          * @default '16px'
          * @since 3.0.0
          */
@@ -638,7 +638,7 @@ var TextStyle = new Class({
     },
 
     /**
-     * Set the font size.
+     * Set the font size. Can be a string with a valid CSS unit, i.e. `16px`, or a number.
      *
      * @method Phaser.GameObjects.TextStyle#setFontSize
      * @since 3.0.0
@@ -766,9 +766,8 @@ var TextStyle = new Class({
     /**
      * Set the resolution used by the Text object.
      *
-     * By default it will be set to match the resolution set in the Game Config,
-     * but you can override it via this method. It allows for much clearer text on High DPI devices,
-     * at the cost of memory because it uses larger internal Canvas textures for the Text.
+     * It allows for much clearer text on High DPI devices, at the cost of memory because
+     * it uses larger internal Canvas textures for the Text.
      *
      * Please use with caution, as the more high res Text you have, the more memory it uses up.
      *

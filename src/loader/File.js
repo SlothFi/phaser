@@ -1,17 +1,17 @@
 /**
  * @author       Richard Davey <rich@photonstorm.com>
- * @copyright    2022 Photon Storm Ltd.
+ * @copyright    2013-2023 Photon Storm Ltd.
  * @license      {@link https://opensource.org/licenses/MIT|MIT License}
  */
 
-var Class = require('../utils/Class');
-var CONST = require('./const');
-var Events = require('./events');
-var GetFastValue = require('../utils/object/GetFastValue');
-var GetURL = require('./GetURL');
-var MergeXHRSettings = require('./MergeXHRSettings');
-var XHRLoader = require('./XHRLoader');
-var XHRSettings = require('./XHRSettings');
+var Class = require("../utils/Class");
+var CONST = require("./const");
+var Events = require("./events");
+var GetFastValue = require("../utils/object/GetFastValue");
+var GetURL = require("./GetURL");
+var MergeXHRSettings = require("./MergeXHRSettings");
+var XHRLoader = require("./XHRLoader");
+var XHRSettings = require("./XHRSettings");
 
 /**
  * @classdesc
@@ -27,11 +27,7 @@ var XHRSettings = require('./XHRSettings');
  * @param {Phaser.Types.Loader.FileConfig} fileConfig - The file configuration object, as created by the file type.
  */
 var File = new Class({
-
-    initialize:
-
-    function File (loader, fileConfig)
-    {
+    initialize: function File(loader, fileConfig) {
         /**
          * A reference to the Loader that is going to load this file.
          *
@@ -48,7 +44,7 @@ var File = new Class({
          * @type {(Phaser.Cache.BaseCache|Phaser.Textures.TextureManager)}
          * @since 3.7.0
          */
-        this.cache = GetFastValue(fileConfig, 'cache', false);
+        this.cache = GetFastValue(fileConfig, "cache", false);
 
         /**
          * The file type string (image, json, etc) for sorting within the Loader.
@@ -57,11 +53,10 @@ var File = new Class({
          * @type {string}
          * @since 3.0.0
          */
-        this.type = GetFastValue(fileConfig, 'type', false);
+        this.type = GetFastValue(fileConfig, "type", false);
 
-        if (!this.type)
-        {
-            throw new Error('Invalid File type: ' + this.type);
+        if (!this.type) {
+            throw new Error("Invalid File type: " + this.type);
         }
 
         /**
@@ -71,28 +66,32 @@ var File = new Class({
          * @type {string}
          * @since 3.0.0
          */
-        this.key = GetFastValue(fileConfig, 'key', false);
+        this.key = GetFastValue(fileConfig, "key", false);
 
         var loadKey = this.key;
 
-        if (loader.prefix && loader.prefix !== '')
-        {
+        if (loader.prefix && loader.prefix !== "") {
             this.key = loader.prefix + loadKey;
         }
 
-        if (!this.key)
-        {
-            throw new Error('Invalid File key: ' + this.key);
+        if (!this.key) {
+            throw new Error("Invalid File key: " + this.key);
         }
 
-        var url = GetFastValue(fileConfig, 'url');
+        var url = GetFastValue(fileConfig, "url");
 
-        if (url === undefined)
-        {
-            url = loader.path + loadKey + '.' + GetFastValue(fileConfig, 'extension', '');
-        }
-        else if (typeof url === 'string' && !url.match(/^(?:blob:|data:|capacitor:\/\/|http:\/\/|https:\/\/|\/\/)/))
-        {
+        if (url === undefined) {
+            url =
+                loader.path +
+                loadKey +
+                "." +
+                GetFastValue(fileConfig, "extension", "");
+        } else if (
+            typeof url === "string" &&
+            !url.match(
+                /^(?:blob:|data:|capacitor:\/\/|http:\/\/|https:\/\/|\/\/)/
+            )
+        ) {
             url = loader.path + url;
         }
 
@@ -117,7 +116,7 @@ var File = new Class({
          * @type {string}
          * @since 3.0.0
          */
-        this.src = '';
+        this.src = "";
 
         /**
          * The merged XHRSettings for this file.
@@ -126,11 +125,15 @@ var File = new Class({
          * @type {Phaser.Types.Loader.XHRSettingsObject}
          * @since 3.0.0
          */
-        this.xhrSettings = XHRSettings(GetFastValue(fileConfig, 'responseType', undefined));
+        this.xhrSettings = XHRSettings(
+            GetFastValue(fileConfig, "responseType", undefined)
+        );
 
-        if (GetFastValue(fileConfig, 'xhrSettings', false))
-        {
-            this.xhrSettings = MergeXHRSettings(this.xhrSettings, GetFastValue(fileConfig, 'xhrSettings', {}));
+        if (GetFastValue(fileConfig, "xhrSettings", false)) {
+            this.xhrSettings = MergeXHRSettings(
+                this.xhrSettings,
+                GetFastValue(fileConfig, "xhrSettings", {})
+            );
         }
 
         /**
@@ -149,7 +152,10 @@ var File = new Class({
          * @type {number}
          * @since 3.0.0
          */
-        this.state = (typeof(this.url) === 'function') ? CONST.FILE_POPULATED : CONST.FILE_PENDING;
+        this.state =
+            typeof this.url === "function"
+                ? CONST.FILE_POPULATED
+                : CONST.FILE_PENDING;
 
         /**
          * The total size of this file.
@@ -210,7 +216,7 @@ var File = new Class({
          * @type {*}
          * @since 3.0.0
          */
-        this.config = GetFastValue(fileConfig, 'config', {});
+        this.config = GetFastValue(fileConfig, "config", {});
 
         /**
          * If this is a multipart file, i.e. an atlas and its json together, then this is a reference
@@ -242,8 +248,7 @@ var File = new Class({
      *
      * @param {Phaser.Loader.File} fileB - The file to link to this one.
      */
-    setLink: function (fileB)
-    {
+    setLink: function (fileB) {
         this.linkFile = fileB;
 
         fileB.linkFile = this;
@@ -255,10 +260,8 @@ var File = new Class({
      * @method Phaser.Loader.File#resetXHR
      * @since 3.0.0
      */
-    resetXHR: function ()
-    {
-        if (this.xhrLoader)
-        {
+    resetXHR: function () {
+        if (this.xhrLoader) {
             this.xhrLoader.onload = undefined;
             this.xhrLoader.onerror = undefined;
             this.xhrLoader.onprogress = undefined;
@@ -273,32 +276,24 @@ var File = new Class({
      * @method Phaser.Loader.File#load
      * @since 3.0.0
      */
-    load: function ()
-    {
-        if (this.state === CONST.FILE_POPULATED)
-        {
+    load: function () {
+        if (this.state === CONST.FILE_POPULATED) {
             //  Can happen for example in a JSONFile if they've provided a JSON object instead of a URL
             this.loader.nextFile(this, true);
-        }
-        else
-        {
+        } else {
             this.state = CONST.FILE_LOADING;
 
             this.src = GetURL(this, this.loader.baseURL);
 
-            if (this.src.indexOf('data:') === 0)
-            {
-                console.warn('Local data URIs are not supported: ' + this.key);
-            }
-            else
-            {
+            if (this.src.indexOf("data:") === 0) {
+                console.warn("Local data URIs are not supported: " + this.key);
+            } else {
                 //  The creation of this XHRLoader starts the load process going.
                 //  It will automatically call the following, based on the load outcome:
                 //
                 // xhr.onload = this.onLoad
                 // xhr.onerror = this.onError
                 // xhr.onprogress = this.onProgress
-
                 this.xhrLoader = XHRLoader(this, this.loader.xhr);
             }
         }
@@ -313,20 +308,20 @@ var File = new Class({
      * @param {XMLHttpRequest} xhr - The XMLHttpRequest that caused this onload event.
      * @param {ProgressEvent} event - The DOM ProgressEvent that resulted from this load.
      */
-    onLoad: function (xhr, event)
-    {
-        var isLocalFile = xhr.responseURL && this.loader.localSchemes.some(function (scheme)
-        {
-            return xhr.responseURL.indexOf(scheme) === 0;
-        });
+    onLoad: function (xhr, event) {
+        var isLocalFile =
+            xhr.responseURL &&
+            this.loader.localSchemes.some(function (scheme) {
+                return xhr.responseURL.indexOf(scheme) === 0;
+            });
 
-        var localFileOk = (isLocalFile && event.target.status === 0);
+        var localFileOk = isLocalFile && event.target.status === 0;
 
-        var success = !(event.target && event.target.status !== 200) || localFileOk;
+        var success =
+            !(event.target && event.target.status !== 200) || localFileOk;
 
         //  Handle HTTP status codes of 4xx and 5xx as errors, even if xhr.onerror was not called.
-        if (xhr.readyState === 4 && xhr.status >= 400 && xhr.status <= 599)
-        {
+        if (xhr.readyState === 4 && xhr.status >= 400 && xhr.status <= 599) {
             success = false;
         }
 
@@ -346,8 +341,7 @@ var File = new Class({
      * @param {XMLHttpRequest} xhr - The XMLHttpRequest that caused this onload event.
      * @param {ProgressEvent} event - The DOM ProgressEvent that resulted from this error.
      */
-    onError: function ()
-    {
+    onError: function () {
         this.resetXHR();
 
         this.loader.nextFile(this, false);
@@ -362,14 +356,15 @@ var File = new Class({
      *
      * @param {ProgressEvent} event - The DOM ProgressEvent.
      */
-    onProgress: function (event)
-    {
-        if (event.lengthComputable)
-        {
+    onProgress: function (event) {
+        if (event.lengthComputable) {
             this.bytesLoaded = event.loaded;
             this.bytesTotal = event.total;
 
-            this.percentComplete = Math.min((this.bytesLoaded / this.bytesTotal), 1);
+            this.percentComplete = Math.min(
+                this.bytesLoaded / this.bytesTotal,
+                1
+            );
 
             this.loader.emit(Events.FILE_PROGRESS, this, this.percentComplete);
         }
@@ -382,8 +377,7 @@ var File = new Class({
      * @method Phaser.Loader.File#onProcess
      * @since 3.0.0
      */
-    onProcess: function ()
-    {
+    onProcess: function () {
         this.state = CONST.FILE_PROCESSING;
 
         this.onProcessComplete();
@@ -396,12 +390,10 @@ var File = new Class({
      * @method Phaser.Loader.File#onProcessComplete
      * @since 3.7.0
      */
-    onProcessComplete: function ()
-    {
+    onProcessComplete: function () {
         this.state = CONST.FILE_COMPLETE;
 
-        if (this.multiFile)
-        {
+        if (this.multiFile) {
             this.multiFile.onFileComplete(this);
         }
 
@@ -415,15 +407,13 @@ var File = new Class({
      * @method Phaser.Loader.File#onProcessError
      * @since 3.7.0
      */
-    onProcessError: function ()
-    {
+    onProcessError: function () {
         // eslint-disable-next-line no-console
         console.error('Failed to process file: %s "%s"', this.type, this.key);
 
         this.state = CONST.FILE_ERRORED;
 
-        if (this.multiFile)
-        {
+        if (this.multiFile) {
             this.multiFile.onFileFailed(this);
         }
 
@@ -440,9 +430,8 @@ var File = new Class({
      *
      * @return {boolean} `true` if adding this file will cause a conflict, otherwise `false`.
      */
-    hasCacheConflict: function ()
-    {
-        return (this.cache && this.cache.exists(this.key));
+    hasCacheConflict: function () {
+        return this.cache && this.cache.exists(this.key);
     },
 
     /**
@@ -452,10 +441,8 @@ var File = new Class({
      * @method Phaser.Loader.File#addToCache
      * @since 3.7.0
      */
-    addToCache: function ()
-    {
-        if (this.cache && this.data)
-        {
+    addToCache: function () {
+        if (this.cache && this.data) {
             this.cache.add(this.key, this.data);
         }
     },
@@ -469,20 +456,25 @@ var File = new Class({
      * @fires Phaser.Loader.Events#FILE_KEY_COMPLETE
      * @since 3.7.0
      */
-    pendingDestroy: function (data)
-    {
-        if (this.state === CONST.FILE_PENDING_DESTROY)
-        {
+    pendingDestroy: function (data) {
+        if (this.state === CONST.FILE_PENDING_DESTROY) {
             return;
         }
 
-        if (data === undefined) { data = this.data; }
+        if (data === undefined) {
+            data = this.data;
+        }
 
         var key = this.key;
         var type = this.type;
 
         this.loader.emit(Events.FILE_COMPLETE, key, type, data);
-        this.loader.emit(Events.FILE_KEY_COMPLETE + type + '-' + key, key, type, data);
+        this.loader.emit(
+            Events.FILE_KEY_COMPLETE + type + "-" + key,
+            key,
+            type,
+            data
+        );
 
         this.loader.flagForRemoval(this);
 
@@ -495,16 +487,14 @@ var File = new Class({
      * @method Phaser.Loader.File#destroy
      * @since 3.7.0
      */
-    destroy: function ()
-    {
+    destroy: function () {
         this.loader = null;
         this.cache = null;
         this.xhrSettings = null;
         this.multiFile = null;
         this.linkFile = null;
         this.data = null;
-    }
-
+    },
 });
 
 /**
@@ -519,20 +509,19 @@ var File = new Class({
  * @param {Blob} blob - A Blob object to create an object URL for.
  * @param {string} defaultType - Default mime type used if blob type is not available.
  */
-File.createObjectURL = function (image, blob, defaultType)
-{
-    if (typeof URL === 'function')
-    {
+File.createObjectURL = function (image, blob, defaultType) {
+    if (typeof URL === "function") {
         image.src = URL.createObjectURL(blob);
-    }
-    else
-    {
+    } else {
         var reader = new FileReader();
 
-        reader.onload = function ()
-        {
-            image.removeAttribute('crossOrigin');
-            image.src = 'data:' + (blob.type || defaultType) + ';base64,' + reader.result.split(',')[1];
+        reader.onload = function () {
+            image.removeAttribute("crossOrigin");
+            image.src =
+                "data:" +
+                (blob.type || defaultType) +
+                ";base64," +
+                reader.result.split(",")[1];
         };
 
         reader.onerror = image.onerror;
@@ -551,10 +540,8 @@ File.createObjectURL = function (image, blob, defaultType)
  *
  * @param {HTMLImageElement} image - Image object which 'src' attribute should be revoked.
  */
-File.revokeObjectURL = function (image)
-{
-    if (typeof URL === 'function')
-    {
+File.revokeObjectURL = function (image) {
+    if (typeof URL === "function") {
         URL.revokeObjectURL(image.src);
     }
 };

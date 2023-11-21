@@ -1,6 +1,6 @@
 /**
  * @author       Richard Davey <rich@photonstorm.com>
- * @copyright    2022 Photon Storm Ltd.
+ * @copyright    2013-2023 Photon Storm Ltd.
  * @license      {@link https://opensource.org/licenses/MIT|MIT License}
  */
 
@@ -95,7 +95,7 @@ var World = new Class({
          * An object containing the 4 wall bodies that bound the physics world.
          *
          * @name Phaser.Physics.Matter.World#walls
-         * @type {object}
+         * @type {Phaser.Types.Physics.Matter.MatterWalls}
          * @since 3.0.0
          */
         this.walls = { left: null, right: null, top: null, bottom: null };
@@ -109,20 +109,6 @@ var World = new Class({
          * @since 3.0.0
          */
         this.enabled = GetValue(config, 'enabled', true);
-
-        /**
-         * The correction argument is an optional Number that specifies the time correction factor to apply to the update.
-         * This can help improve the accuracy of the simulation in cases where delta is changing between updates.
-         * The value of correction is defined as delta / lastDelta, i.e. the percentage change of delta over the last step.
-         * Therefore the value is always 1 (no correction) when delta is constant (or when no correction is desired, which is the default).
-         * See the paper on Time Corrected Verlet for more information.
-         *
-         * @name Phaser.Physics.Matter.World#correction
-         * @type {number}
-         * @default 1
-         * @since 3.4.0
-         */
-        this.correction = GetValue(config, 'correction', 1);
 
         /**
          * This function is called every time the core game loop steps, which is bound to the
@@ -181,7 +167,6 @@ var World = new Class({
          */
         this.runner = {
             fps: fps,
-            correction: GetFastValue(runnerConfig, 'correction', 1),
             deltaSampleSize: GetFastValue(runnerConfig, 'deltaSampleSize', 60),
             counterTimestamp: 0,
             frameCounter: 0,
@@ -716,6 +701,7 @@ var World = new Class({
 
     /**
      * Sets the bounds of the Physics world to match the given world pixel dimensions.
+     *
      * You can optionally set which 'walls' to create: left, right, top or bottom.
      * If none of the walls are given it will default to use the walls settings it had previously.
      * I.e. if you previously told it to not have the left or right walls, and you then adjust the world size
@@ -862,14 +848,11 @@ var World = new Class({
     {
         if (x === undefined) { x = 0; }
         if (y === undefined) { y = 1; }
+        if (scale === undefined) { scale = 0.001; }
 
         this.localWorld.gravity.x = x;
         this.localWorld.gravity.y = y;
-
-        if (scale !== undefined)
-        {
-            this.localWorld.gravity.scale = scale;
-        }
+        this.localWorld.gravity.scale = scale;
 
         return this;
     },
@@ -977,6 +960,10 @@ var World = new Class({
      *
      * Set the appropriate tiles in your layer to collide before calling this method!
      *
+     * If you modify the map after calling this method, i.e. via a function like `putTileAt` then
+     * you should call the `Phaser.Physics.Matter.World.convertTiles` function directly, passing
+     * it an array of the tiles you've added to your map.
+     *
      * @method Phaser.Physics.Matter.World#convertTilemapLayer
      * @since 3.0.0
      *
@@ -996,8 +983,10 @@ var World = new Class({
     },
 
     /**
-     * Adds `MatterTileBody` instances for the given tiles. This adds bodies regardless of whether the
-     * tiles are set to collide or not.
+     * Creates `MatterTileBody` instances for all of the given tiles. This creates bodies regardless of whether the
+     * tiles are set to collide or not, or if they have a body already, or not.
+     *
+     * If you wish to pass an array of tiles that may already have bodies, you should filter the array before hand.
      *
      * @method Phaser.Physics.Matter.World#convertTiles
      * @since 3.0.0
@@ -1121,7 +1110,6 @@ var World = new Class({
         var runner = this.runner;
 
         var timing = engine.timing;
-        var correction = this.correction;
 
         if (runner.isFixed)
         {
@@ -1143,26 +1131,11 @@ var World = new Class({
             delta = delta < runner.deltaMin ? runner.deltaMin : delta;
             delta = delta > runner.deltaMax ? runner.deltaMax : delta;
 
-            // correction for delta
-            correction = delta / runner.delta;
-
             // update engine timing object
             runner.delta = delta;
         }
 
-        // time correction for time scaling
-        if (runner.timeScalePrev !== 0)
-        {
-            correction *= timing.timeScale / runner.timeScalePrev;
-        }
-
-        if (timing.timeScale === 0)
-        {
-            correction = 0;
-        }
-
         runner.timeScalePrev = timing.timeScale;
-        runner.correction = correction;
 
         // fps counter
         runner.frameCounter += 1;
@@ -1174,7 +1147,7 @@ var World = new Class({
             runner.frameCounter = 0;
         }
 
-        Engine.update(engine, delta, correction);
+        Engine.update(engine, delta);
     },
 
     /**
@@ -1202,11 +1175,10 @@ var World = new Class({
      * @since 3.4.0
      *
      * @param {number} [delta=16.666] - The delta value.
-     * @param {number} [correction=1] - Optional delta correction value.
      */
-    step: function (delta, correction)
+    step: function (delta)
     {
-        Engine.update(this.engine, delta, correction);
+        Engine.update(this.engine, delta);
     },
 
     /**

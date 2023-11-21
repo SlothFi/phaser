@@ -1,6 +1,6 @@
 /**
  * @author       Richard Davey <rich@photonstorm.com>
- * @copyright    2022 Photon Storm Ltd.
+ * @copyright    2013-2023 Photon Storm Ltd.
  * @license      {@link https://opensource.org/licenses/MIT|MIT License}
  */
 
@@ -594,7 +594,7 @@ var CameraManager = new Class({
         var scene = this.scene;
         var cameras = this.cameras;
 
-        for (var i = 0; i < this.cameras.length; i++)
+        for (var i = 0; i < cameras.length; i++)
         {
             var camera = cameras[i];
 
@@ -624,19 +624,10 @@ var CameraManager = new Class({
      */
     getVisibleChildren: function (children, camera)
     {
-        var visible = [];
-
-        for (var i = 0; i < children.length; i++)
+        return children.filter(function (child)
         {
-            var child = children[i];
-
-            if (child.willRender(camera))
-            {
-                visible.push(child);
-            }
-        }
-
-        return visible;
+            return child.willRender(camera);
+        });
     },
 
     /**

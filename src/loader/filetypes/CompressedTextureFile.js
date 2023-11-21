@@ -440,7 +440,7 @@ var CompressedTextureFile = new Class({
  * It is available in the default build but can be excluded from custom builds.
  *
  * @method Phaser.Loader.LoaderPlugin#texture
- * @fires Phaser.Loader.LoaderPlugin#ADD
+ * @fires Phaser.Loader.Events#ADD
  * @since 3.60.0
  *
  * @param {(string|Phaser.Types.Loader.FileTypes.CompressedTextureFileConfig|Phaser.Types.Loader.FileTypes.CompressedTextureFileConfig[])} key - The key to use for this file, or a file configuration object, or array of them.
@@ -505,21 +505,27 @@ FileTypesManager.register('texture', function (key, url, xhrSettings)
         }
         else if (entry.format === 'IMG')
         {
+            var file;
             var multifile;
+
             if (entry.multiAtlasURL)
             {
-                multifile = new MultiAtlasFile(this, key, entry.multiAtlasURL, entry.multiPath, entry.multiBaseURL, xhrSettings);
-                loader.addFile(multifile.files);
+                multifile = new MultiAtlasFile(loader, key, entry.multiAtlasURL, entry.multiPath, entry.multiBaseURL, xhrSettings);
+
+                file = multifile.files;
             }
             else if (entry.atlasURL)
             {
                 multifile = new AtlasJSONFile(loader, key, entry.textureURL, entry.atlasURL, xhrSettings);
-                loader.addFile(multifile.files);
+
+                file = multifile.files;
             }
             else
             {
-                loader.addFile(new ImageFile(loader, key, entry.textureURL, xhrSettings));
+                file = new ImageFile(loader, key, entry.textureURL, xhrSettings);
             }
+
+            loader.addFile(file);
         }
         else
         {

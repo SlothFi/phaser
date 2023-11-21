@@ -1,18 +1,19 @@
 /**
  * @author       Richard Davey <rich@photonstorm.com>
- * @copyright    2022 Photon Storm Ltd.
+ * @copyright    2013-2023 Photon Storm Ltd.
  * @license      {@link https://opensource.org/licenses/MIT|MIT License}
  */
 
 var Class = require('../utils/Class');
 var CONST = require('../const');
+var DefaultPlugins = require('../plugins/DefaultPlugins');
 var Device = require('../device');
 var GetFastValue = require('../utils/object/GetFastValue');
 var GetValue = require('../utils/object/GetValue');
 var IsPlainObject = require('../utils/object/IsPlainObject');
-var PhaserMath = require('../math/');
 var NOOP = require('../utils/NOOP');
-var DefaultPlugins = require('../plugins/DefaultPlugins');
+var PhaserMath = require('../math/');
+var PIPELINE_CONST = require('../renderer/webgl/pipelines/const');
 var ValueToColor = require('../display/color/ValueToColor');
 
 /**
@@ -103,22 +104,22 @@ var Config = new Class({
         /**
          * @const {number} Phaser.Core.Config#minWidth - The minimum width, in pixels, the canvas will scale down to. A value of zero means no minimum.
          */
-        this.minWidth = GetValue(scaleConfig, 'minWidth', 0, config);
+        this.minWidth = GetValue(scaleConfig, 'min.width', 0, config);
 
         /**
          * @const {number} Phaser.Core.Config#maxWidth - The maximum width, in pixels, the canvas will scale up to. A value of zero means no maximum.
          */
-        this.maxWidth = GetValue(scaleConfig, 'maxWidth', 0, config);
+        this.maxWidth = GetValue(scaleConfig, 'max.width', 0, config);
 
         /**
          * @const {number} Phaser.Core.Config#minHeight - The minimum height, in pixels, the canvas will scale down to. A value of zero means no minimum.
          */
-        this.minHeight = GetValue(scaleConfig, 'minHeight', 0, config);
+        this.minHeight = GetValue(scaleConfig, 'min.height', 0, config);
 
         /**
          * @const {number} Phaser.Core.Config#maxHeight - The maximum height, in pixels, the canvas will scale up to. A value of zero means no maximum.
          */
-        this.maxHeight = GetValue(scaleConfig, 'maxHeight', 0, config);
+        this.maxHeight = GetValue(scaleConfig, 'max.height', 0, config);
 
         /**
          * @const {number} Phaser.Core.Config#renderType - Force Phaser to use a specific renderer. Can be `CONST.CANVAS`, `CONST.WEBGL`, `CONST.HEADLESS` or `CONST.AUTO` (default)
@@ -176,6 +177,18 @@ var Config = new Class({
          * @const {boolean} Phaser.Core.Config#autoFocus - If `true` the window will automatically be given focus immediately and on any future mousedown event.
          */
         this.autoFocus = GetValue(config, 'autoFocus', true);
+
+        /**
+         * @const {(number|boolean)} Phaser.Core.Config#stableSort - `false` or `0` = Use the built-in StableSort (needed for older browsers), `true` or `1` = Rely on ES2019 Array.sort being stable (modern browsers only), or `-1` = Try and determine this automatically based on browser inspection (not guaranteed to work, errs on side of caution).
+         */
+        this.stableSort = GetValue(config, 'stableSort', -1);
+
+        if (this.stableSort === -1)
+        {
+            this.stableSort = (Device.browser.es2019) ? 1 : 0;
+        }
+
+        Device.features.stableSort = this.stableSort;
 
         //  DOM Element Container
 
@@ -328,6 +341,16 @@ var Config = new Class({
         this.pipeline = GetValue(renderConfig, 'pipeline', null, config);
 
         /**
+         * @const {boolean} Phaser.Core.Config#autoMobilePipeline - Automatically enable the Mobile Pipeline if iOS or Android detected?
+         */
+        this.autoMobilePipeline = GetValue(renderConfig, 'autoMobilePipeline', true, config);
+
+        /**
+         * @const {string} Phaser.Core.Config#defaultPipeline - The WebGL Pipeline that Game Objects will use by default. Set to 'MultiPipeline' as standard. See also 'autoMobilePipeline'.
+         */
+        this.defaultPipeline = GetValue(renderConfig, 'defaultPipeline', PIPELINE_CONST.MULTI_PIPELINE, config);
+
+        /**
          * @const {boolean} Phaser.Core.Config#antialias - When set to `true`, WebGL uses linear interpolation to draw scaled or rotated textures, giving a smooth appearance. When set to `false`, WebGL uses nearest-neighbor interpolation, giving a crisper appearance. `false` also disables antialiasing of the game canvas itself, if the browser supports it, when the game canvas is scaled.
          */
         this.antialias = GetValue(renderConfig, 'antialias', true, config);
@@ -338,9 +361,9 @@ var Config = new Class({
         this.antialiasGL = GetValue(renderConfig, 'antialiasGL', true, config);
 
         /**
-         * @const {string} Phaser.Core.Config#mipmapFilter - Sets the `mipmapFilter` property when the WebGL renderer is created.
+         * @const {string} Phaser.Core.Config#mipmapFilter - Sets the mipmap magFilter to be used when creating WebGL textures. Don't set unless you wish to create mipmaps. Set to one of the following: 'NEAREST', 'LINEAR', 'NEAREST_MIPMAP_NEAREST', 'LINEAR_MIPMAP_NEAREST', 'NEAREST_MIPMAP_LINEAR' or 'LINEAR_MIPMAP_LINEAR'.
          */
-        this.mipmapFilter = GetValue(renderConfig, 'mipmapFilter', 'LINEAR', config);
+        this.mipmapFilter = GetValue(renderConfig, 'mipmapFilter', '', config);
 
         /**
          * @const {boolean} Phaser.Core.Config#desynchronized - When set to `true` it will create a desynchronized context for both 2D and WebGL. See https://developers.google.com/web/updates/2019/05/desynchronized for details.
@@ -504,6 +527,16 @@ var Config = new Class({
          * @const {string[]} Phaser.Core.Config#loaderLocalScheme - An array of schemes that the Loader considers as being 'local' files. Defaults to: `[ 'file://', 'capacitor://' ]`.
          */
         this.loaderLocalScheme = GetValue(config, 'loader.localScheme', [ 'file://', 'capacitor://' ]);
+
+        /**
+         * @const {number} Phaser.Core.Config#glowFXQuality - The quality of the Glow FX (defaults to 0.1)
+         */
+        this.glowFXQuality = GetValue(config, 'fx.glow.quality', 0.1);
+
+        /**
+         * @const {number} Phaser.Core.Config#glowFXDistance - The distance of the Glow FX (defaults to 10)
+         */
+        this.glowFXDistance = GetValue(config, 'fx.glow.distance', 10);
 
         /*
          * Allows `plugins` property to either be an array, in which case it just replaces

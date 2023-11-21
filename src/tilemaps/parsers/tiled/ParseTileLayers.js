@@ -1,6 +1,6 @@
 /**
  * @author       Richard Davey <rich@photonstorm.com>
- * @copyright    2022 Photon Storm Ltd.
+ * @copyright    2013-2023 Photon Storm Ltd.
  * @license      {@link https://opensource.org/licenses/MIT|MIT License}
  */
 
@@ -122,6 +122,7 @@ var ParseTileLayers = function (json, insertNull)
 
             layerData = new LayerData({
                 name: (curGroupState.name + curl.name),
+                id: curl.id,
                 x: (curGroupState.x + GetFastValue(curl, 'offsetx', 0) + layerOffsetX * json.tilewidth),
                 y: (curGroupState.y + GetFastValue(curl, 'offsety', 0) + layerOffsetY * json.tileheight),
                 width: curl.width,
@@ -137,6 +138,8 @@ var ParseTileLayers = function (json, insertNull)
             if (layerData.orientation === CONST.HEXAGONAL)
             {
                 layerData.hexSideLength = json.hexsidelength;
+                layerData.staggerAxis = json.staggeraxis;
+                layerData.staggerIndex = json.staggerindex;
             }
 
             for (var c = 0; c < curl.height; c++)
@@ -200,6 +203,7 @@ var ParseTileLayers = function (json, insertNull)
         {
             layerData = new LayerData({
                 name: (curGroupState.name + curl.name),
+                id: curl.id,
                 x: (curGroupState.x + GetFastValue(curl, 'offsetx', 0) + curl.x),
                 y: (curGroupState.y + GetFastValue(curl, 'offsety', 0) + curl.y),
                 width: curl.width,
@@ -215,6 +219,8 @@ var ParseTileLayers = function (json, insertNull)
             if (layerData.orientation === CONST.HEXAGONAL)
             {
                 layerData.hexSideLength = json.hexsidelength;
+                layerData.staggerAxis = json.staggeraxis;
+                layerData.staggerIndex = json.staggerindex;
             }
             var row = [];
 

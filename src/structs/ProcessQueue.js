@@ -1,6 +1,6 @@
 /**
  * @author       Richard Davey <rich@photonstorm.com>
- * @copyright    2022 Photon Storm Ltd.
+ * @copyright    2013-2023 Photon Storm Ltd.
  * @license      {@link https://opensource.org/licenses/MIT|MIT License}
  */
 
@@ -170,8 +170,8 @@ var ProcessQueue = new Class({
      */
     add: function (item)
     {
-        //  Don't add if already active or pending
-        if (this.checkQueue && (this.isActive(item) || this.isPending(item)))
+        //  Don't add if already active or pending, but DO add if active AND in the destroy list
+        if (this.checkQueue && (this.isActive(item) && !this.isDestroying(item)) || this.isPending(item))
         {
             return item;
         }

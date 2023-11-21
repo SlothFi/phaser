@@ -1,9 +1,10 @@
 /**
  * @author       Richard Davey <rich@photonstorm.com>
- * @copyright    2022 Photon Storm Ltd.
+ * @copyright    2013-2023 Photon Storm Ltd.
  * @license      {@link https://opensource.org/licenses/MIT|MIT License}
  */
 
+var BaseTween = require('../tween/BaseTween');
 var Defaults = require('../tween/Defaults');
 var GetAdvancedValue = require('../../utils/object/GetAdvancedValue');
 var GetBoolean = require('./GetBoolean');
@@ -14,6 +15,7 @@ var GetProps = require('./GetProps');
 var GetTargets = require('./GetTargets');
 var GetValue = require('../../utils/object/GetValue');
 var GetValueOp = require('./GetValueOp');
+var MergeRight = require('../../utils/object/MergeRight');
 var Tween = require('../tween/Tween');
 
 /**
@@ -30,13 +32,29 @@ var Tween = require('../tween/Tween');
  */
 var TweenBuilder = function (parent, config, defaults)
 {
+    if (config instanceof Tween)
+    {
+        config.parent = parent;
+
+        return config;
+    }
+
     if (defaults === undefined)
     {
         defaults = Defaults;
     }
+    else
+    {
+        defaults = MergeRight(Defaults, defaults);
+    }
 
     //  Create arrays of the Targets and the Properties
-    var targets = (defaults.targets) ? defaults.targets : GetTargets(config);
+    var targets = GetTargets(config);
+
+    if (!targets && defaults.targets)
+    {
+        targets = defaults.targets;
+    }
 
     var props = GetProps(config);
 
@@ -56,28 +74,73 @@ var TweenBuilder = function (parent, config, defaults)
 
     var addTarget = function (tween, targetIndex, key, value)
     {
-        var ops = GetValueOp(key, value);
+        if (key === 'texture')
+        {
+            var texture = value;
+            var frame = undefined;
 
-        var interpolationFunc = GetInterpolationFunction(GetValue(value, 'interpolation', interpolation));
+            if (Array.isArray(value))
+            {
+                texture = value[0];
+                frame = value[1];
+            }
+            else if (value.hasOwnProperty('value'))
+            {
+                texture = value.value;
 
-        tween.add(
-            targetIndex,
-            key,
-            ops.getEnd,
-            ops.getStart,
-            ops.getActive,
-            GetEaseFunction(GetValue(value, 'ease', ease), GetValue(value, 'easeParams', easeParams)),
-            GetNewValue(value, 'delay', delay),
-            GetValue(value, 'duration', duration),
-            GetBoolean(value, 'yoyo', yoyo),
-            GetValue(value, 'hold', hold),
-            GetValue(value, 'repeat', repeat),
-            GetValue(value, 'repeatDelay', repeatDelay),
-            GetBoolean(value, 'flipX', flipX),
-            GetBoolean(value, 'flipY', flipY),
-            interpolationFunc,
-            (interpolationFunc) ? value : null
-        );
+                if (Array.isArray(value.value))
+                {
+                    texture = value.value[0];
+                    frame = value.value[1];
+                }
+                else if (typeof value.value === 'string')
+                {
+                    texture = value.value;
+                }
+            }
+            else if (typeof value === 'string')
+            {
+                texture = value;
+            }
+
+            tween.addFrame(
+                targetIndex,
+                texture,
+                frame,
+                GetNewValue(value, 'delay', delay),
+                GetValue(value, 'duration', duration),
+                GetValue(value, 'hold', hold),
+                GetValue(value, 'repeat', repeat),
+                GetValue(value, 'repeatDelay', repeatDelay),
+                GetBoolean(value, 'flipX', flipX),
+                GetBoolean(value, 'flipY', flipY)
+            );
+        }
+        else
+        {
+            var ops = GetValueOp(key, value);
+
+            var interpolationFunc = GetInterpolationFunction(GetValue(value, 'interpolation', interpolation));
+
+            tween.add(
+                targetIndex,
+                key,
+                ops.getEnd,
+                ops.getStart,
+                ops.getActive,
+                GetEaseFunction(GetValue(value, 'ease', ease), GetValue(value, 'easeParams', easeParams)),
+                GetNewValue(value, 'delay', delay),
+                GetValue(value, 'duration', duration),
+                GetBoolean(value, 'yoyo', yoyo),
+                GetValue(value, 'hold', hold),
+                GetValue(value, 'repeat', repeat),
+                GetValue(value, 'repeatDelay', repeatDelay),
+                GetBoolean(value, 'flipX', flipX),
+                GetBoolean(value, 'flipY', flipY),
+                interpolationFunc,
+                (interpolationFunc) ? value : null
+            );
+        }
     };
 
     var tween = new Tween(parent, targets);
@@ -113,7 +176,7 @@ var TweenBuilder = function (parent, config, defaults)
     //  Set the Callbacks
     tween.callbackScope = GetValue(config, 'callbackScope', tween);
 
-    var callbacks = Tween.TYPES;
+    var callbacks = BaseTween.TYPES;
 
     for (var i = 0; i < callbacks.length; i++)
     {

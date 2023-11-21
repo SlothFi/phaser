@@ -1,7 +1,7 @@
 /**
  * @author       Richard Davey <rich@photonstorm.com>
  * @author       Pavle Goloskokovic <pgoloskokovic@gmail.com> (http://prunegames.com)
- * @copyright    2022 Photon Storm Ltd.
+ * @copyright    2013-2023 Photon Storm Ltd.
  * @license      {@link https://opensource.org/licenses/MIT|MIT License}
  */
 
@@ -96,6 +96,9 @@ var NoAudioSoundManager = new Class({
      * @method Phaser.Sound.NoAudioSoundManager#get
      * @since 3.23.0
      *
+     * @generic {Phaser.Sound.BaseSound} T
+     * @genericUse {T} - [$return]
+     *
      * @param {string} key - Sound asset key.
      *
      * @return {?Phaser.Sound.BaseSound} - The sound, or null.
@@ -110,6 +113,9 @@ var NoAudioSoundManager = new Class({
      *
      * @method Phaser.Sound.NoAudioSoundManager#getAll
      * @since 3.23.0
+     *
+     * @generic {Phaser.Sound.BaseSound} T
+     * @genericUse {T[]} - [$return]
      *
      * @param {string} key - Sound asset key.
      *
@@ -284,6 +290,8 @@ var NoAudioSoundManager = new Class({
      *
      * @method Phaser.Sound.NoAudioSoundManager#setRate
      * @since 3.0.0
+     *
+     * @return {this} This Sound Manager.
      */
     setRate: NOOP,
 
@@ -292,6 +300,8 @@ var NoAudioSoundManager = new Class({
      *
      * @method Phaser.Sound.NoAudioSoundManager#setDetune
      * @since 3.0.0
+     *
+     * @return {this} This Sound Manager.
      */
     setDetune: NOOP,
 

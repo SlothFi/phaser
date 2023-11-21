@@ -1,6 +1,6 @@
 /**
  * @author       Richard Davey <rich@photonstorm.com>
- * @copyright    2022 Photon Storm Ltd.
+ * @copyright    2013-2023 Photon Storm Ltd.
  * @license      {@link https://opensource.org/licenses/MIT|MIT License}
  */
 
@@ -334,6 +334,9 @@ var GameObject = new Class({
      * @method Phaser.GameObjects.GameObject#setData
      * @since 3.0.0
      *
+     * @generic {any} T
+     * @genericUse {(string|T)} - [key]
+     *
      * @param {(string|object)} key - The key to set the value for. Or an object of key value pairs. If an object the `data` argument is ignored.
      * @param {*} [data] - The value to set for the given key. If an object is provided as the key this argument is ignored.
      *
@@ -364,19 +367,19 @@ var GameObject = new Class({
      * @method Phaser.GameObjects.GameObject#incData
      * @since 3.23.0
      *
-     * @param {(string|object)} key - The key to increase the value for.
-     * @param {*} [data] - The value to increase for the given key.
+     * @param {string} key - The key to change the value for.
+     * @param {number} [amount=1] - The amount to increase the given key by. Pass a negative value to decrease the key.
      *
      * @return {this} This GameObject.
      */
-    incData: function (key, value)
+    incData: function (key, amount)
     {
         if (!this.data)
         {
             this.data = new DataManager(this);
         }
 
-        this.data.inc(key, value);
+        this.data.inc(key, amount);
 
         return this;
     },
@@ -394,7 +397,7 @@ var GameObject = new Class({
      * @method Phaser.GameObjects.GameObject#toggleData
      * @since 3.23.0
      *
-     * @param {(string|object)} key - The key to toggle the value for.
+     * @param {string} key - The key to toggle the value for.
      *
      * @return {this} This GameObject.
      */
@@ -723,7 +726,7 @@ var GameObject = new Class({
      * every game frame. This method is passed two parameters: `delta` and `time`.
      *
      * If you wish to run your own logic within `preUpdate` then you should always call
-     * `preUpdate.super(delta, time)` within it, or it may fail to process required operations,
+     * `super.preUpdate(delta, time)` within it, or it may fail to process required operations,
      * such as Sprite animations.
      *
      * @method Phaser.GameObjects.GameObject#addToUpdateList
@@ -763,7 +766,7 @@ var GameObject = new Class({
     {
         var displayList = this.displayList || this.scene.sys.displayList;
 
-        if (displayList.exists(this))
+        if (displayList && displayList.exists(this))
         {
             displayList.remove(this, true);
 
@@ -869,6 +872,20 @@ var GameObject = new Class({
             this.body.destroy();
 
             this.body = undefined;
+        }
+
+        if (this.preFX)
+        {
+            this.preFX.destroy();
+
+            this.preFX = undefined;
+        }
+
+        if (this.postFX)
+        {
+            this.postFX.destroy();
+
+            this.postFX = undefined;
         }
 
         this.active = false;

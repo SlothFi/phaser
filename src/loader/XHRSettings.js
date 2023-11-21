@@ -1,6 +1,6 @@
 /**
  * @author       Richard Davey <rich@photonstorm.com>
- * @copyright    2022 Photon Storm Ltd.
+ * @copyright    2013-2023 Photon Storm Ltd.
  * @license      {@link https://opensource.org/licenses/MIT|MIT License}
  */
 
@@ -19,21 +19,19 @@
  *
  * @return {Phaser.Types.Loader.XHRSettingsObject} The XHRSettings object as used by the Loader.
  */
-var XHRSettings = function (responseType, async, user, password, timeout, withCredentials)
-{
-    if (responseType === undefined) { responseType = ''; }
-    if (async === undefined) { async = true; }
-    if (user === undefined) { user = ''; }
-    if (password === undefined) { password = ''; }
-    if (timeout === undefined) { timeout = 0; }
-    if (withCredentials === undefined) { withCredentials = false; }
-
+var XHRSettings = function (
+    responseType,
+    async,
+    user,
+    password,
+    timeout,
+    withCredentials
+) {
     // Before sending a request, set the xhr.responseType to "text",
     // "arraybuffer", "blob", or "document", depending on your data needs.
     // Note, setting xhr.responseType = '' (or omitting) will default the response to "text".
 
     return {
-
         //  Ignored by the Loader, only used by File.
         responseType: responseType,
 
@@ -56,8 +54,7 @@ var XHRSettings = function (responseType, async, user, password, timeout, withCr
         overrideMimeType: undefined,
 
         //  withCredentials
-        withCredentials: withCredentials
-
+        withCredentials: withCredentials,
     };
 };
 

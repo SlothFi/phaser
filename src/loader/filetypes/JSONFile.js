@@ -1,6 +1,6 @@
 /**
  * @author       Richard Davey <rich@photonstorm.com>
- * @copyright    2022 Photon Storm Ltd.
+ * @copyright    2013-2023 Photon Storm Ltd.
  * @license      {@link https://opensource.org/licenses/MIT|MIT License}
  */
 
@@ -69,9 +69,9 @@ var JSONFile = new Class({
 
         File.call(this, loader, fileConfig);
 
+        //  A JSON object has been provided (instead of a URL), so we'll use it directly as the File.data. No need to load it.
         if (IsPlainObject(url))
         {
-            //  Object provided instead of a URL, so no need to actually load it (populate data with value)
             if (dataKey)
             {
                 this.data = GetValue(url, dataKey);
@@ -202,7 +202,7 @@ var JSONFile = new Class({
  * It is available in the default build but can be excluded from custom builds.
  *
  * @method Phaser.Loader.LoaderPlugin#json
- * @fires Phaser.Loader.LoaderPlugin#ADD
+ * @fires Phaser.Loader.Events#ADD
  * @since 3.0.0
  *
  * @param {(string|Phaser.Types.Loader.FileTypes.JSONFileConfig|Phaser.Types.Loader.FileTypes.JSONFileConfig[])} key - The key to use for this file, or a file configuration object, or array of them.

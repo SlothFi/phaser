@@ -1,6 +1,6 @@
 /**
  * @author       samme
- * @copyright    2022 Photon Storm Ltd.
+ * @copyright    2013-2023 Photon Storm Ltd.
  * @license      {@link https://opensource.org/licenses/MIT|MIT License}
  */
 
@@ -22,6 +22,7 @@
  * ```
  *
  * @event Phaser.Tweens.Events#TWEEN_STOP
+ * @type {string}
  * @since 3.24.0
  *
  * @param {Phaser.Tweens.Tween} tween - A reference to the Tween instance that emitted the event.

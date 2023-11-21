@@ -1,6 +1,6 @@
 /**
  * @author       Richard Davey <rich@photonstorm.com>
- * @copyright    2022 Photon Storm Ltd.
+ * @copyright    2013-2023 Photon Storm Ltd.
  * @license      {@link https://opensource.org/licenses/MIT|MIT License}
  */
 
@@ -65,6 +65,24 @@ var PutTileAt = function (tile, tileX, tileY, recalculateFaces, layer)
     // Updating colliding flag on the new tile
     var newTile = layer.data[tileY][tileX];
     var collides = layer.collideIndexes.indexOf(newTile.index) !== -1;
+
+    index = tile instanceof Tile ? tile.index : tile;
+
+    if (index === -1)
+    {
+        newTile.width = layer.tileWidth;
+        newTile.height = layer.tileHeight;
+    }
+    else
+    {
+        var tilemap = layer.tilemapLayer.tilemap;
+        var tiles = tilemap.tiles;
+        var sid = tiles[index][2];
+        var set = tilemap.tileset[sid];
+
+        newTile.width = set.tileWidth;
+        newTile.height = set.tileHeight;
+    }
 
     SetTileCollision(newTile, collides);
 

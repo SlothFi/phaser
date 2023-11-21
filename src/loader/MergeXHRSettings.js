@@ -1,11 +1,11 @@
 /**
  * @author       Richard Davey <rich@photonstorm.com>
- * @copyright    2022 Photon Storm Ltd.
+ * @copyright    2013-2023 Photon Storm Ltd.
  * @license      {@link https://opensource.org/licenses/MIT|MIT License}
  */
 
-var Extend = require('../utils/object/Extend');
-var XHRSettings = require('./XHRSettings');
+var Extend = require("../utils/object/Extend");
+var XHRSettings = require("./XHRSettings");
 
 /**
  * Takes two XHRSettings Objects and creates a new XHRSettings object from them.
@@ -21,16 +21,12 @@ var XHRSettings = require('./XHRSettings');
  *
  * @return {Phaser.Types.Loader.XHRSettingsObject} A newly formed XHRSettings object.
  */
-var MergeXHRSettings = function (global, local)
-{
-    var output = (global === undefined) ? XHRSettings() : Extend({}, global);
+var MergeXHRSettings = function (global, local) {
+    var output = global === undefined ? XHRSettings() : Extend({}, global);
 
-    if (local)
-    {
-        for (var setting in local)
-        {
-            if (local[setting] !== undefined)
-            {
+    if (local) {
+        for (const setting in local) {
+            if (local[setting] !== undefined) {
                 output[setting] = local[setting];
             }
         }

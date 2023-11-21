@@ -1,6 +1,6 @@
 /**
  * @author       Richard Davey <rich@photonstorm.com>
- * @copyright    2022 Photon Storm Ltd.
+ * @copyright    2013-2023 Photon Storm Ltd.
  * @license      {@link https://opensource.org/licenses/MIT|MIT License}
  */
 
@@ -12,7 +12,7 @@ var GetValue = require('./GetValue');
  *
  * Allowed types:
  *
- * Implicit
+ * Explicit:
  * {
  *     x: 4
  * }

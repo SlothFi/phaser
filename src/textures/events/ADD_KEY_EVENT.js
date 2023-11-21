@@ -1,6 +1,6 @@
 /**
  * @author       samme
- * @copyright    2022 Photon Storm Ltd.
+ * @copyright    2013-2023 Photon Storm Ltd.
  * @license      {@link https://opensource.org/licenses/MIT|MIT License}
  */
 
@@ -12,6 +12,7 @@
  * Listen to this event from within a Scene using: `this.textures.on('addtexture-key', listener)`.
  *
  * @event Phaser.Textures.Events#ADD_KEY
+ * @type {string}
  * @since 3.60.0
  *
  * @param {Phaser.Textures.Texture} texture - A reference to the Texture that was added to the Texture Manager.

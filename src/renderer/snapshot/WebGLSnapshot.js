@@ -1,6 +1,6 @@
 /**
  * @author       Richard Davey <rich@photonstorm.com>
- * @copyright    2022 Photon Storm Ltd.
+ * @copyright    2013-2023 Photon Storm Ltd.
  * @license      {@link https://opensource.org/licenses/MIT|MIT License}
  */
 
@@ -59,20 +59,19 @@ var WebGLSnapshot = function (sourceContext, config)
         gl.readPixels(x, bufferHeight - y - height, width, height, gl.RGBA, gl.UNSIGNED_BYTE, pixels);
 
         var canvas = CanvasPool.createWebGL(this, width, height);
-        var ctx = canvas.getContext('2d');
+        var ctx = canvas.getContext('2d', { willReadFrequently: true });
 
         var imageData = ctx.getImageData(0, 0, width, height);
 
         var data = imageData.data;
-
-        // var destIndex = (isFramebuffer) ? total - ((py * width + (width - px)) * 4) : (py * width + px) * 4;
 
         for (var py = 0; py < height; py++)
         {
             for (var px = 0; px < width; px++)
             {
                 var sourceIndex = ((height - py - 1) * width + px) * 4;
-                var destIndex = (py * width + px) * 4;
+
+                var destIndex = (isFramebuffer) ? total - ((py * width + (width - px)) * 4) : (py * width + px) * 4;
 
                 data[destIndex + 0] = pixels[sourceIndex + 0];
                 data[destIndex + 1] = pixels[sourceIndex + 1];

@@ -1,6 +1,6 @@
 /**
  * @author       Richard Davey <rich@photonstorm.com>
- * @copyright    2022 Photon Storm Ltd.
+ * @copyright    2013-2023 Photon Storm Ltd.
  * @license      {@link https://opensource.org/licenses/MIT|MIT License}
  */
 
@@ -63,7 +63,11 @@ var SinglePipeline = new Class({
     {
         WebGLPipeline.prototype.boot.call(this);
 
+        var renderer = this.renderer;
+
         this.set1i('uMainSampler', 0);
+        this.set2f('uResolution', renderer.width, renderer.height);
+        this.set1i('uRoundPixels', renderer.config.roundPixels);
     }
 
 });

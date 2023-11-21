@@ -1,6 +1,6 @@
 /**
  * @author       Richard Davey <rich@photonstorm.com>
- * @copyright    2022 Photon Storm Ltd.
+ * @copyright    2013-2023 Photon Storm Ltd.
  * @license      {@link https://opensource.org/licenses/MIT|MIT License}
  */
 
@@ -46,9 +46,11 @@ var Render = require('./BitmapTextRender');
  * @extends Phaser.GameObjects.Components.Alpha
  * @extends Phaser.GameObjects.Components.BlendMode
  * @extends Phaser.GameObjects.Components.Depth
+ * @extends Phaser.GameObjects.Components.GetBounds
  * @extends Phaser.GameObjects.Components.Mask
  * @extends Phaser.GameObjects.Components.Origin
  * @extends Phaser.GameObjects.Components.Pipeline
+ * @extends Phaser.GameObjects.Components.PostPipeline
  * @extends Phaser.GameObjects.Components.ScrollFactor
  * @extends Phaser.GameObjects.Components.Texture
  * @extends Phaser.GameObjects.Components.Tint
@@ -71,9 +73,11 @@ var BitmapText = new Class({
         Components.Alpha,
         Components.BlendMode,
         Components.Depth,
+        Components.GetBounds,
         Components.Mask,
         Components.Origin,
         Components.Pipeline,
+        Components.PostPipeline,
         Components.ScrollFactor,
         Components.Texture,
         Components.Tint,
@@ -150,6 +154,18 @@ var BitmapText = new Class({
          * @since 3.4.0
          */
         this._letterSpacing = 0;
+
+        /**
+         * Adds / Removes line spacing in a multiline BitmapText object.
+         *
+         * Can be a negative or positive number.
+         *
+         * @name Phaser.GameObjects.BitmapText#_lineSpacing
+         * @type {number}
+         * @private
+         * @since 3.60.0
+         */
+        this._lineSpacing = 0;
 
         /**
          * Controls the alignment of each line of text in this BitmapText object.
@@ -279,6 +295,7 @@ var BitmapText = new Class({
         this.setPosition(x, y);
         this.setOrigin(0, 0);
         this.initPipeline();
+        this.initPostPipeline();
 
         this.setText(text);
     },
@@ -375,6 +392,30 @@ var BitmapText = new Class({
         this._letterSpacing = spacing;
 
         this._dirty = true;
+
+        return this;
+    },
+
+    /**
+     * Sets the line spacing value. This value is added to the font height to
+     * calculate the overall line height.
+     *
+     * Spacing can be a negative or positive number.
+     *
+     * Only has an effect if this BitmapText object contains multiple lines of text.
+     *
+     * @method Phaser.GameObjects.BitmapText#setLineSpacing
+     * @since 3.60.0
+     *
+     * @param {number} [spacing=0] - The amount of space to add between each line in multi-line text.
+     *
+     * @return {this} This BitmapText Object.
+     */
+    setLineSpacing: function (spacing)
+    {
+        if (spacing === undefined) { spacing = 0; }
+
+        this.lineSpacing = spacing;
 
         return this;
     },
@@ -921,6 +962,32 @@ var BitmapText = new Class({
     },
 
     /**
+     * Adds / Removes spacing between lines.
+     *
+     * Can be a negative or positive number.
+     *
+     * You can also use the method `setLineSpacing` if you want a chainable way to change the line spacing.
+     *
+     * @name Phaser.GameObjects.BitmapText#lineSpacing
+     * @type {number}
+     * @since 3.60.0
+     */
+    lineSpacing: {
+
+        set: function (value)
+        {
+            this._lineSpacing = value;
+            this._dirty = true;
+        },
+
+        get: function ()
+        {
+            return this._lineSpacing;
+        }
+
+    },
+
+    /**
      * The maximum display width of this BitmapText in pixels.
      *
      * If BitmapText.text is longer than maxWidth then the lines will be automatically wrapped
@@ -952,6 +1019,8 @@ var BitmapText = new Class({
     /**
      * The width of this Bitmap Text.
      *
+     * This property is read-only.
+     *
      * @name Phaser.GameObjects.BitmapText#width
      * @type {number}
      * @readonly
@@ -969,7 +1038,9 @@ var BitmapText = new Class({
     },
 
     /**
-     * The height of this bitmap text.
+     * The height of this Bitmap text.
+     *
+     * This property is read-only.
      *
      * @name Phaser.GameObjects.BitmapText#height
      * @type {number}
@@ -983,6 +1054,48 @@ var BitmapText = new Class({
             this.getTextBounds(false);
 
             return this._bounds.global.height;
+        }
+
+    },
+
+    /**
+     * The displayed width of this Bitmap Text.
+     *
+     * This value takes into account the scale factor.
+     *
+     * This property is read-only.
+     *
+     * @name Phaser.GameObjects.BitmapText#displayWidth
+     * @type {number}
+     * @readonly
+     * @since 3.60.0
+     */
+    displayWidth: {
+
+        get: function ()
+        {
+            return this.width;
+        }
+
+    },
+
+    /**
+     * The displayed height of this Bitmap Text.
+     *
+     * This value takes into account the scale factor.
+     *
+     * This property is read-only.
+     *
+     * @name Phaser.GameObjects.BitmapText#displayHeight
+     * @type {number}
+     * @readonly
+     * @since 3.60.0
+     */
+    displayHeight: {
+
+        get: function ()
+        {
+            return this.height;
         }
 
     },
@@ -1006,6 +1119,7 @@ var BitmapText = new Class({
             text: this.text,
             fontSize: this.fontSize,
             letterSpacing: this.letterSpacing,
+            lineSpacing: this.lineSpacing,
             align: this.align
         };
 

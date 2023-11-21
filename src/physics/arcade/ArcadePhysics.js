@@ -1,6 +1,6 @@
 /**
  * @author       Richard Davey <rich@photonstorm.com>
- * @copyright    2022 Photon Storm Ltd.
+ * @copyright    2013-2023 Photon Storm Ltd.
  * @license      {@link https://opensource.org/licenses/MIT|MIT License}
  */
 
@@ -87,6 +87,16 @@ var ArcadePhysics = new Class({
          * @since 3.0.0
          */
         this.add;
+
+        /**
+         * Holds the internal collision filter category.
+         *
+         * @name Phaser.Physics.Arcade.World#_category
+         * @private
+         * @type {number}
+         * @since 3.61.0
+         */
+        this._category = 0x0001;
 
         scene.sys.events.once(SceneEvents.BOOT, this.boot, this);
         scene.sys.events.on(SceneEvents.START, this.start, this);
@@ -187,6 +197,28 @@ var ArcadePhysics = new Class({
         );
 
         return config;
+    },
+
+    /**
+     * Returns the next available collision category.
+     *
+     * You can have a maximum of 32 categories.
+     *
+     * By default all bodies collide with all other bodies.
+     *
+     * Use the `Body.setCollisionCategory()` and
+     * `Body.setCollidesWith()` methods to change this.
+     *
+     * @method Phaser.Physics.Arcade.ArcadePhysics#nextCategory
+     * @since 3.61.0
+     *
+     * @return {number} The next collision category.
+     */
+    nextCategory: function ()
+    {
+        this._category = this._category << 1;
+
+        return this._category;
     },
 
     /**
@@ -417,10 +449,11 @@ var ArcadePhysics = new Class({
      * @method Phaser.Physics.Arcade.ArcadePhysics#closest
      * @since 3.0.0
      *
-     * @param {any} source - Any object with public `x` and `y` properties, such as a Game Object or Geometry object.
-     * @param {(Phaser.Physics.Arcade.Body[]|Phaser.Physics.Arcade.StaticBody[]|Phaser.GameObjects.GameObject[])} [targets] - The targets.
+     * @generic {Phaser.Physics.Arcade.Body|Phaser.Physics.Arcade.StaticBody|Phaser.GameObjects.GameObject} Target
+     * @param {Phaser.Types.Math.Vector2Like} source - Any object with public `x` and `y` properties, such as a Game Object or Geometry object.
+     * @param {Target[]} [targets] - The targets.
      *
-     * @return {?(Phaser.Physics.Arcade.Body|Phaser.Physics.Arcade.StaticBody|Phaser.GameObjects.GameObject)} The target closest to the given source point.
+     * @return {Target|null} The target closest to the given source point.
      */
     closest: function (source, targets)
     {
@@ -693,6 +726,7 @@ var ArcadePhysics = new Class({
 
         this.add = null;
         this.world = null;
+        this._category = 1;
     },
 
     /**

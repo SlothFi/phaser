@@ -1,6 +1,6 @@
 /**
  * @author       Richard Davey <rich@photonstorm.com>
- * @copyright    2022 Photon Storm Ltd.
+ * @copyright    2013-2023 Photon Storm Ltd.
  * @license      {@link https://opensource.org/licenses/MIT|MIT License}
  */
 
@@ -116,6 +116,8 @@ AudioFile.create = function (loader, key, urls, config, xhrSettings)
 
     if (!urlConfig)
     {
+        console.warn('No audio URLs for "%s" matched this device', key);
+
         return null;
     }
 
@@ -215,7 +217,7 @@ AudioFile.getAudioURL = function (game, urls)
  * It is available in the default build but can be excluded from custom builds.
  *
  * @method Phaser.Loader.LoaderPlugin#audio
- * @fires Phaser.Loader.LoaderPlugin#ADD
+ * @fires Phaser.Loader.Events#ADD
  * @since 3.0.0
  *
  * @param {(string|Phaser.Types.Loader.FileTypes.AudioFileConfig|Phaser.Types.Loader.FileTypes.AudioFileConfig[])} key - The key to use for this file, or a file configuration object, or array of them.
