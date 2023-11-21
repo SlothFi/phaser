@@ -9,10 +9,10 @@ var ParseGID = require('./ParseGID');
 
 var copyPoints = function (p) { return { x: p.x, y: p.y }; };
 
-var commonObjectProps = [ 'id', 'name', 'type', 'rotation', 'properties', 'visible', 'x', 'y', 'width', 'height' ];
+var commonObjectProps = [ 'id', 'name', 'class', 'rotation', 'properties', 'visible', 'x', 'y', 'width', 'height' ];
 
 /**
- * Convert a Tiled object to an internal parsed object normalising and copying properties over, while applying optional x and y offsets. The parsed object will always have the properties `id`, `name`, `type`, `rotation`, `properties`, `visible`, `x`, `y`, `width` and `height`. Other properties will be added according to the object type (such as text, polyline, gid etc.)
+ * Convert a Tiled object to an internal parsed object normalising and copying properties over, while applying optional x and y offsets. The parsed object will always have the properties `id`, `name`, `class`, `rotation`, `properties`, `visible`, `x`, `y`, `width` and `height`. Other properties will be added according to the object type (such as text, polyline, gid etc.)
  *
  * @function Phaser.Tilemaps.Parsers.Tiled.ParseObject
  * @since 3.0.0
@@ -21,7 +21,7 @@ var commonObjectProps = [ 'id', 'name', 'type', 'rotation', 'properties', 'visib
  * @param {number} [offsetX=0] - Optional additional offset to apply to the object's x property. Defaults to 0.
  * @param {number} [offsetY=0] - Optional additional offset to apply to the object's y property. Defaults to 0.
  *
- * @return {object} The parsed object containing properties read from the Tiled object according to it's type with x and y values updated according to the given offsets.
+ * @return {object} The parsed object containing properties read from the Tiled object according to it's class with x and y values updated according to the given offsets.
  */
 var ParseObject = function (tiledObject, offsetX, offsetY)
 {
