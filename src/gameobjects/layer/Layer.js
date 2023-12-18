@@ -12,6 +12,7 @@ var DataManager = require('../../data/DataManager');
 var EventEmitter = require('eventemitter3');
 var GameObjectEvents = require('../events');
 var List = require('../../structs/List');
+var RemoveBetween = require('../../utils/array/RemoveBetween');
 var Render = require('./LayerRender');
 var SceneEvents = require('../../scene/events');
 var StableSort = require('../../utils/array/StableSort');
@@ -933,7 +934,7 @@ var Layer = new Class({
      * @method Phaser.GameObjects.Layer#destroy
      * @fires Phaser.GameObjects.Events#DESTROY
      * @since 3.50.0
-     * 
+     *
      * @param {boolean} [fromScene=false] - `True` if this Game Object is being destroyed by the Scene, `false` if not.
      */
     destroy: function (fromScene)

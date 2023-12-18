@@ -144,7 +144,7 @@ var Text = new Class({
          * @type {CanvasRenderingContext2D}
          * @since 3.0.0
          */
-        this.context = this.canvas.getContext('2d', { willReadFrequently: true });
+        this.context;
 
         /**
          * The Text Style object.
@@ -263,6 +263,9 @@ var Text = new Class({
 
         //  Create a Texture for this Text object
         this.texture = scene.sys.textures.addCanvas(null, this.canvas, true);
+
+        //  Set the context to be the CanvasTexture context
+        this.context = this.texture.context;
 
         //  Get the frame
         this.frame = this.texture.get();
@@ -822,7 +825,7 @@ var Text = new Class({
      * @method Phaser.GameObjects.Text#setFill
      * @since 3.0.0
      *
-     * @param {(string|any)} color - The text fill style. Can be any valid CanvasRenderingContext `fillStyle` value.
+     * @param {(string|CanvasGradient|CanvasPattern)} color - The text fill style. Can be any valid CanvasRenderingContext `fillStyle` value.
      *
      * @return {this} This Text object.
      */
@@ -837,7 +840,7 @@ var Text = new Class({
      * @method Phaser.GameObjects.Text#setColor
      * @since 3.0.0
      *
-     * @param {string} color - The text fill color.
+     * @param {(string|CanvasGradient|CanvasPattern)} color - The text fill color.
      *
      * @return {this} This Text object.
      */
@@ -852,7 +855,7 @@ var Text = new Class({
      * @method Phaser.GameObjects.Text#setStroke
      * @since 3.0.0
      *
-     * @param {string} color - The stroke color.
+     * @param {(string|CanvasGradient|CanvasPattern)} color - The stroke color.
      * @param {number} thickness - The stroke thickness.
      *
      * @return {this} This Text object.
@@ -1067,7 +1070,7 @@ var Text = new Class({
      * need to display large quantities of characters with fine control over the letter spacing.
      *
      * @method Phaser.GameObjects.Text#setLetterSpacing
-     * @since 3.61.0
+     * @since 3.70.0
      *
      * @param {number} value - The amount to add to the letter width. Set to zero to disable.
      *
@@ -1165,7 +1168,7 @@ var Text = new Class({
      * Render text from right-to-left or left-to-right.
      *
      * @method Phaser.GameObjects.Text#setRTL
-     * @since 3.61.0
+     * @since 3.70.0
      *
      * @param {boolean} [rtl=true] - Set to `true` to render from right-to-left.
      *
